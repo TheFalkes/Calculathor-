@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Vault iOS - Medias & Navigateur</title>
+    <title>InCalc Vault</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -15,13 +15,13 @@
             theme: {
                 extend: {
                     colors: {
-                        iosBg: '#0b0b12',
-                        iosCard: '#151522',
-                        iosCardBorder: '#232338',
-                        iosPurple: '#635bff',
-                        iosBlue: '#0a84ff',
-                        iosRed: '#ff453a',
-                        iosGray: '#8e8e93'
+                        inBg: '#090910',
+                        inCard: '#131320',
+                        inCardBorder: '#202035',
+                        inPurple: '#5c53f5',
+                        inPurpleHover: '#4a41e0',
+                        inRed: '#ff453a',
+                        inGray: '#8e8e93'
                     }
                 }
             }
@@ -39,12 +39,11 @@
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             -webkit-user-select: none;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #0b0b12;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #090910;
             color: #ffffff;
         }
 
-        /* SAFE AREA IPHONE 15 PLUS (DYNAMIC ISLAND) */
         header {
             padding-top: calc(env(safe-area-inset-top, 47px) + 12px) !important;
         }
@@ -60,87 +59,125 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        .pin-btn {
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .pin-btn:active {
+            background-color: rgba(92, 83, 245, 0.4) !important;
+            transform: scale(0.92);
+        }
+
+        /* Prevent image context menu popup on touch long press */
+        img, video {
+            -webkit-touch-callout: none !important;
+            pointer-events: none;
+        }
     </style>
 </head>
-<body class="bg-iosBg text-white antialiased w-full h-full flex flex-col justify-between overflow-hidden inset-0">
+<body class="bg-inBg text-white antialiased w-full h-full flex flex-col justify-between overflow-hidden inset-0">
 
-    <!-- ÉCRAN DE VERROUILLAGE PIN (0507) -->
-    <div id="lockScreen" class="fixed inset-0 z-50 bg-iosBg flex flex-col items-center justify-center p-6 touch-none">
-        <div class="text-center mb-8">
-            <div class="w-16 h-16 bg-iosCard border border-iosCardBorder rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl text-iosPurple shadow-xl">
+    <!-- ÉCRAN DE VERROUILLAGE PIN (CODE : 0507) -->
+    <div id="lockScreen" class="fixed inset-0 z-50 bg-inBg flex flex-col items-center justify-center p-6 select-none">
+        <div class="text-center mb-10">
+            <div class="w-20 h-20 bg-inCard border border-inCardBorder rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl text-inPurple shadow-2xl">
                 <i class="fa-solid fa-lock"></i>
             </div>
-            <h1 class="text-xl font-bold">Coffre-fort Sécurisé</h1>
-            <p class="text-sm text-iosGray mt-1">Saisissez votre code PIN</p>
+            <h1 class="text-2xl font-black tracking-tight">InCalc</h1>
+            <p class="text-xs text-inGray mt-1 font-medium">Entrez votre code de sécurité</p>
         </div>
 
-        <div id="pinDots" class="flex space-x-4 mb-10">
-            <div class="w-3.5 h-3.5 rounded-full border border-iosGray transition-all"></div>
-            <div class="w-3.5 h-3.5 rounded-full border border-iosGray transition-all"></div>
-            <div class="w-3.5 h-3.5 rounded-full border border-iosGray transition-all"></div>
-            <div class="w-3.5 h-3.5 rounded-full border border-iosGray transition-all"></div>
+        <div id="pinDots" class="flex space-x-5 mb-12">
+            <div class="w-4 h-4 rounded-full border-2 border-inGray/50 transition-all duration-200"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-inGray/50 transition-all duration-200"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-inGray/50 transition-all duration-200"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-inGray/50 transition-all duration-200"></div>
         </div>
 
-        <div class="grid grid-cols-3 gap-6 w-full max-w-xs">
-            <button onclick="enterPin('1')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">1</button>
-            <button onclick="enterPin('2')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">2</button>
-            <button onclick="enterPin('3')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">3</button>
-            <button onclick="enterPin('4')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">4</button>
-            <button onclick="enterPin('5')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">5</button>
-            <button onclick="enterPin('6')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">6</button>
-            <button onclick="enterPin('7')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">7</button>
-            <button onclick="enterPin('8')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">8</button>
-            <button onclick="enterPin('9')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">9</button>
+        <div class="grid grid-cols-3 gap-6 w-full max-w-xs px-2">
+            <button type="button" data-key="1" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">1</button>
+            <button type="button" data-key="2" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">2</button>
+            <button type="button" data-key="3" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">3</button>
+            <button type="button" data-key="4" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">4</button>
+            <button type="button" data-key="5" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">5</button>
+            <button type="button" data-key="6" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">6</button>
+            <button type="button" data-key="7" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">7</button>
+            <button type="button" data-key="8" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">8</button>
+            <button type="button" data-key="9" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">9</button>
             <div class="w-16 h-16"></div>
-            <button onclick="enterPin('0')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">0</button>
-            <button onclick="clearPin()" class="w-16 h-16 rounded-full text-xs text-iosGray flex items-center justify-center mx-auto active:text-white transition"><i class="fa-solid fa-delete-left text-xl"></i></button>
+            <button type="button" data-key="0" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">0</button>
+            <button type="button" id="clearPinBtn" class="w-16 h-16 rounded-full text-inGray flex items-center justify-center mx-auto active:text-white transition"><i class="fa-solid fa-delete-left text-2xl"></i></button>
         </div>
     </div>
 
-    <!-- EN-TÊTE PRINCIPALE PARFAITEMENT DÉGAGÉE DE LA DYNAMIC ISLAND -->
-    <header class="shrink-0 bg-iosBg/90 backdrop-blur-md border-b border-iosCardBorder/60 px-5 pb-3 flex items-center justify-between z-20">
-        <h1 id="headerTitle" class="text-2xl font-extrabold tracking-tight">Coffre</h1>
+    <!-- EN-TÊTE -->
+    <header class="shrink-0 bg-inBg/95 backdrop-blur-md border-b border-inCardBorder/40 px-5 pb-3 flex items-center justify-between z-20">
         <div class="flex items-center space-x-3">
-            <button onclick="switchTab('browser')" class="w-9 h-9 rounded-full bg-iosPurple/20 text-iosPurple flex items-center justify-center active:scale-90 transition">
-                <i class="fa-solid fa-compass text-base"></i>
+            <button id="menuSettingsBtn" onclick="switchTab('settings')" class="text-white text-xl p-1">
+                <i class="fa-solid fa-bars"></i>
             </button>
-            <button onclick="openCreateFolderModal()" class="w-9 h-9 rounded-full bg-iosCard border border-iosCardBorder text-white flex items-center justify-center active:scale-90 transition">
-                <i class="fa-solid fa-folder-plus text-sm"></i>
+            <h1 id="headerTitle" class="text-2xl font-black tracking-tight italic">InCalc</h1>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="switchTab('browser')" class="text-inGray text-lg p-1 hover:text-white">
+                <i class="fa-solid fa-magnifying-glass"></i>
             </button>
+            <span class="bg-gradient-to-r from-blue-500 to-fuchsia-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md tracking-wider">PRO</span>
         </div>
     </header>
 
     <!-- CONTENU PRINCIPAL -->
     <main class="flex-1 px-4 pt-3 pb-6 overflow-y-auto overflow-x-hidden hide-scrollbar relative">
 
-        <!-- TAB 1: DOSSIERS & GRILLE DES MÉDIAS -->
+        <!-- TAB 1: ALBUMS -->
         <section id="tabFolders" class="tab-content space-y-4">
             <div id="foldersGrid" class="grid grid-cols-2 gap-3.5"></div>
 
             <!-- Vue Intérieur d'un Dossier -->
-            <div id="folderDetailView" class="hidden space-y-4">
-                <div class="flex items-center justify-between bg-iosCard p-3 rounded-2xl border border-iosCardBorder">
-                    <button onclick="closeFolderDetail()" class="text-iosPurple flex items-center space-x-1 font-semibold text-sm">
+            <div id="folderDetailView" class="hidden space-y-3">
+                <!-- En-tête simplifié : Le bouton Sélect. a été retiré -->
+                <div class="flex items-center justify-between bg-inCard p-3 rounded-2xl border border-inCardBorder">
+                    <button onclick="closeFolderDetail()" class="text-inPurple flex items-center space-x-1 font-bold text-sm">
                         <i class="fa-solid fa-chevron-left"></i>
                         <span>Retour</span>
                     </button>
-                    <h2 id="currentFolderName" class="font-bold text-base truncate max-w-[120px]">Dossier</h2>
-                    <div class="flex items-center space-x-2">
-                        <button id="toggleSelectModeBtn" onclick="toggleSelectMode()" class="text-iosPurple text-xs font-semibold bg-iosPurple/15 px-2.5 py-1.5 rounded-lg">
-                            Sélect.
-                        </button>
-                        <button onclick="deleteCurrentFolder()" class="text-iosRed text-sm px-2 py-1 rounded-lg">
-                            <i class="fa-regular fa-trash-can"></i>
-                        </button>
-                    </div>
+                    <h2 id="currentFolderName" class="font-bold text-base truncate max-w-[150px]">Album</h2>
+                    <button onclick="deleteCurrentFolder()" class="text-inRed text-sm px-2 py-1 rounded-lg">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </button>
                 </div>
 
-                <!-- Barre d'actions en mode sélection -->
-                <div id="selectionActionBar" class="hidden bg-iosCard p-3 rounded-2xl border border-iosCardBorder flex items-center justify-between">
-                    <button onclick="toggleSelectAllMedia()" id="selectAllMediaBtn" class="text-xs text-iosPurple font-medium">Tout sélectionner</button>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="openMoveModal()" class="text-xs bg-iosPurple/20 text-iosPurple px-3 py-1.5 rounded-xl font-medium">Déplacer</button>
-                        <button onclick="deleteSelectedMedia()" class="text-xs bg-iosRed/20 text-iosRed px-3 py-1.5 rounded-xl font-medium">Supprimer</button>
+                <!-- Indication d'appui long quand mode sélection inactivé -->
+                <div id="longPressHint" class="text-[11px] text-center text-inGray font-medium bg-inCard/40 py-1.5 rounded-xl border border-inCardBorder/40">
+                    💡 <span class="text-gray-300">Appui long</span> sur une photo pour la sélectionner
+                </div>
+
+                <!-- BARRE D'ACTIONS DE SÉLECTION (Apparaît lors de l'appui long) -->
+                <div id="selectionActionBar" class="hidden bg-inCard p-3 rounded-2xl border border-inPurple/40 flex flex-col space-y-2 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <button onclick="toggleSelectAllMedia()" id="selectAllMediaBtn" class="text-xs text-inPurple font-bold flex items-center space-x-1">
+                            <i class="fa-regular fa-square-check"></i>
+                            <span>Tout sélectionner</span>
+                        </button>
+                        <span class="text-xs text-gray-300 font-bold bg-inPurple/20 px-2.5 py-0.5 rounded-full border border-inPurple/30">
+                            <span id="selectedCount">0</span> sélectionné(s)
+                        </span>
+                        <button onclick="exitSelectMode()" class="text-xs text-inGray hover:text-white font-bold p-1">
+                            <i class="fa-solid fa-xmark text-sm"></i> Annuler
+                        </button>
+                    </div>
+
+                    <div class="flex items-center space-x-2 pt-1 border-t border-inCardBorder/60">
+                        <button onclick="openMoveModalMultiple()" class="flex-1 text-xs bg-inPurple text-white py-2 rounded-xl font-bold active:scale-95 transition flex items-center justify-center space-x-1.5 shadow">
+                            <i class="fa-solid fa-folder-arrow-up"></i>
+                            <span>Déplacer</span>
+                        </button>
+                        <button onclick="deleteSelectedMedia()" class="flex-1 text-xs bg-inRed/20 text-inRed border border-inRed/30 py-2 rounded-xl font-bold active:scale-95 transition flex items-center justify-center space-x-1.5">
+                            <i class="fa-regular fa-trash-can"></i>
+                            <span>Supprimer</span>
+                        </button>
                     </div>
                 </div>
 
@@ -148,55 +185,52 @@
             </div>
         </section>
 
-        <!-- TAB 2: NAVIGATEUR WEB INTÉGRÉ -->
-        <section id="tabBrowser" class="tab-content hidden h-full flex flex-col space-y-3">
-            <div class="flex items-center space-x-2 bg-iosCard border border-iosCardBorder p-2 rounded-2xl">
-                <input type="text" id="browserUrlInput" placeholder="Rechercher ou entrer URL..." class="flex-1 bg-transparent px-2 text-sm outline-none text-white placeholder-iosGray">
-                <button onclick="loadWebPage()" class="w-8 h-8 rounded-xl bg-iosPurple text-white flex items-center justify-center active:scale-90 transition">
-                    <i class="fa-solid fa-arrow-right text-xs"></i>
+        <!-- TAB 2: NAVIGATEUR INTÉGRÉ -->
+        <section id="tabBrowser" class="tab-content hidden h-full flex flex-col space-y-4">
+            <div class="flex items-center space-x-2 bg-inCard border border-inCardBorder p-2 rounded-2xl">
+                <button onclick="closeBrowserView()" class="text-inGray px-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <input type="text" id="browserUrlInput" placeholder="Rechercher ou URL..." class="flex-1 bg-transparent text-sm outline-none text-white placeholder-inGray">
+                <button onclick="loadWebPage()" class="text-inGray px-2"><i class="fa-solid fa-rotate-right text-sm"></i></button>
+            </div>
+
+            <div class="grid grid-cols-4 gap-4 py-4 text-center">
+                <button onclick="openBookmark('https://www.google.com')" class="flex flex-col items-center space-y-1.5">
+                    <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center text-2xl shadow-lg"><i class="fa-brands fa-google text-blue-500"></i></div>
+                    <span class="text-xs font-semibold text-inGray">Google</span>
+                </button>
+                <button onclick="openBookmark('https://www.bing.com')" class="flex flex-col items-center space-y-1.5">
+                    <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center text-2xl shadow-lg"><i class="fa-solid fa-magnifying-glass text-cyan-600"></i></div>
+                    <span class="text-xs font-semibold text-inGray">Bing</span>
+                </button>
+                <button onclick="openBookmark('https://www.yahoo.com')" class="flex flex-col items-center space-y-1.5">
+                    <div class="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-2xl text-white shadow-lg"><i class="fa-brands fa-yahoo"></i></div>
+                    <span class="text-xs font-semibold text-inGray">Yahoo</span>
+                </button>
+                <button onclick="promptBookmark()" class="flex flex-col items-center space-y-1.5">
+                    <div class="w-14 h-14 border-2 border-dashed border-inCardBorder rounded-full flex items-center justify-center text-2xl text-inGray"><i class="fa-solid fa-plus"></i></div>
+                    <span class="text-xs font-semibold text-inGray">Ajouter</span>
                 </button>
             </div>
 
-            <!-- Raccourcis style InCalc -->
-            <div class="grid grid-cols-4 gap-3 py-2 text-center">
-                <button onclick="openBookmark('https://www.google.com')" class="flex flex-col items-center space-y-1">
-                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-xl text-blue-500 shadow-md"><i class="fa-brands fa-google"></i></div>
-                    <span class="text-[11px] text-iosGray">Google</span>
-                </button>
-                <button onclick="openBookmark('https://www.bing.com')" class="flex flex-col items-center space-y-1">
-                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-xl text-cyan-600 shadow-md"><i class="fa-solid fa-magnifying-glass"></i></div>
-                    <span class="text-[11px] text-iosGray">Bing</span>
-                </button>
-                <button onclick="openBookmark('https://www.yahoo.com')" class="flex flex-col items-center space-y-1">
-                    <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-xl text-white shadow-md"><i class="fa-brands fa-yahoo"></i></div>
-                    <span class="text-[11px] text-iosGray">Yahoo</span>
-                </button>
-                <button onclick="promptBookmark()" class="flex flex-col items-center space-y-1">
-                    <div class="w-12 h-12 border-2 border-dashed border-iosCardBorder rounded-full flex items-center justify-center text-xl text-iosGray"><i class="fa-solid fa-plus"></i></div>
-                    <span class="text-[11px] text-iosGray">Ajouter</span>
-                </button>
-            </div>
-
-            <!-- Iframe du navigateur -->
-            <div class="flex-1 rounded-2xl overflow-hidden border border-iosCardBorder bg-black">
+            <div class="flex-1 rounded-2xl overflow-hidden border border-inCardBorder bg-black">
                 <iframe id="browserFrame" src="https://www.bing.com" class="w-full h-full border-none"></iframe>
             </div>
         </section>
 
         <!-- TAB 3: DIAPORAMA ALÉATOIRE -->
         <section id="tabSlideshow" class="tab-content hidden space-y-4">
-            <div class="bg-iosCard p-4 rounded-2xl border border-iosCardBorder space-y-4">
+            <div class="bg-inCard p-4 rounded-2xl border border-inCardBorder space-y-4">
                 <div class="flex items-center justify-between">
-                    <span class="text-sm font-semibold">Sélectionner les dossiers</span>
-                    <button onclick="toggleSelectAllFolders()" id="selectAllBtn" class="text-xs text-iosPurple font-medium">Tout sélectionner</button>
+                    <span class="text-sm font-bold">Sélectionner les albums</span>
+                    <button onclick="toggleSelectAllFolders()" id="selectAllBtn" class="text-xs text-inPurple font-bold">Tout sélectionner</button>
                 </div>
 
                 <div id="slideshowFolderList" class="space-y-2 max-h-48 overflow-y-auto pr-1 hide-scrollbar"></div>
 
-                <div class="pt-2 border-t border-iosCardBorder space-y-3">
+                <div class="pt-2 border-t border-inCardBorder space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-iosGray">Durée par image</span>
-                        <select id="slideshowTimerSelect" class="bg-iosBg border border-iosCardBorder rounded-xl px-3 py-1.5 text-sm text-iosPurple font-medium outline-none">
+                        <span class="text-sm text-inGray">Durée par image</span>
+                        <select id="slideshowTimerSelect" class="bg-inBg border border-inCardBorder rounded-xl px-3 py-1.5 text-sm text-inPurple font-bold outline-none">
                             <option value="2">2 s</option>
                             <option value="3" selected>3 s</option>
                             <option value="5">5 s</option>
@@ -205,139 +239,139 @@
                     </div>
                 </div>
 
-                <button onclick="startSlideshow()" class="w-full py-3.5 bg-iosPurple font-semibold text-white rounded-xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-2">
+                <button onclick="startSlideshow()" class="w-full py-3.5 bg-inPurple font-bold text-white rounded-xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-play text-sm"></i>
-                    <span>Lancer le Diaporama</span>
+                    <span>Lancer le Diaporama Aléatoire</span>
                 </button>
             </div>
         </section>
 
-        <!-- TAB 4: RÉGLAGES STYLE INCALC -->
-        <section id="tabSettings" class="tab-content hidden space-y-4">
-            <div class="bg-iosCard rounded-2xl border border-iosCardBorder divide-y divide-iosCardBorder overflow-hidden">
-                <div class="p-4 flex items-center justify-between">
-                    <div>
-                        <div class="font-medium text-sm">Code PIN</div>
-                        <div class="text-xs text-iosGray mt-0.5">Actuel : 0507</div>
-                    </div>
-                    <button onclick="changePinModal()" class="text-xs text-iosPurple font-medium bg-iosPurple/10 px-3 py-1.5 rounded-lg">Modifier</button>
+        <!-- TAB 4: RÉGLAGES -->
+        <section id="tabSettings" class="tab-content hidden space-y-5">
+            <div class="bg-gradient-to-br from-inCard to-purple-950/40 p-5 rounded-2xl border border-inCardBorder space-y-3">
+                <div class="flex items-center space-x-2">
+                    <span class="font-black text-lg">InCalc</span>
+                    <span class="bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md">PRO</span>
                 </div>
+                <p class="text-xs font-semibold text-gray-300 leading-relaxed">Accédez à toutes les fonctionnalités premium, supprimez toutes les annonces.</p>
+                <button class="w-full py-3 bg-gradient-to-r from-blue-600 to-fuchsia-600 font-bold text-white text-sm rounded-full shadow-lg">Passer à Pro</button>
+            </div>
 
-                <div class="p-4 space-y-3">
-                    <div class="font-medium text-sm">Sauvegarde & Export ZIP</div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="exportAllToZIP()" class="py-2 bg-iosPurple/15 text-iosPurple text-xs font-semibold rounded-xl flex items-center justify-center space-x-1.5">
-                            <i class="fa-solid fa-file-export"></i>
-                            <span>Exporter</span>
-                        </button>
-                        <label class="py-2 bg-iosPurple/15 text-iosPurple text-xs font-semibold rounded-xl flex items-center justify-center space-x-1.5 cursor-pointer">
-                            <i class="fa-solid fa-file-import"></i>
-                            <span>Importer</span>
+            <div class="space-y-2">
+                <div class="text-xs font-bold text-inGray uppercase tracking-wider px-1">GÉNÉRAL</div>
+                <div class="bg-inCard rounded-2xl border border-inCardBorder divide-y divide-inCardBorder/60 overflow-hidden">
+                    <div class="p-3.5 flex items-center justify-between">
+                        <div class="flex items-center space-x-3"><i class="fa-solid fa-lock text-inPurple text-sm"></i><span class="text-sm font-semibold">Code PIN</span></div>
+                        <input type="checkbox" checked class="w-5 h-5 accent-inPurple rounded-full">
+                    </div>
+                    <div onclick="changePinModal()" class="p-3.5 flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center space-x-3"><i class="fa-solid fa-rotate text-inGray text-sm"></i><span class="text-sm font-semibold">Changer le code</span></div>
+                        <i class="fa-solid fa-chevron-right text-xs text-inGray"></i>
+                    </div>
+                    <div class="p-3.5 flex items-center justify-between">
+                        <div class="flex items-center space-x-3"><i class="fa-solid fa-file-export text-inPurple text-sm"></i><span class="text-sm font-semibold">Exporter Sauvegarde (ZIP)</span></div>
+                        <button onclick="exportAllToZIP()" class="text-xs bg-inPurple/20 text-inPurple font-bold px-3 py-1 rounded-lg">Exporter</button>
+                    </div>
+                    <div class="p-3.5 flex items-center justify-between">
+                        <div class="flex items-center space-x-3"><i class="fa-solid fa-file-import text-inPurple text-sm"></i><span class="text-sm font-semibold">Importer Fichiers (ZIP)</span></div>
+                        <label class="text-xs bg-inPurple/20 text-inPurple font-bold px-3 py-1 rounded-lg cursor-pointer">
+                            Importer
                             <input type="file" id="importZipInput" accept=".zip" class="hidden" onchange="importZIPFile(event)">
                         </label>
                     </div>
                 </div>
+            </div>
 
-                <div class="p-4 flex items-center justify-between">
-                    <div>
-                        <div class="font-medium text-sm">Espace utilisé</div>
-                        <div id="storageUsage" class="text-xs text-iosGray mt-0.5">Calcul...</div>
+            <div class="space-y-2">
+                <div class="text-xs font-bold text-inGray uppercase tracking-wider px-1">DONNÉES & STOCKAGE</div>
+                <div class="bg-inCard rounded-2xl border border-inCardBorder divide-y divide-inCardBorder/60 overflow-hidden">
+                    <div class="p-3.5 flex items-center justify-between">
+                        <div class="flex items-center space-x-3"><i class="fa-solid fa-database text-inGray text-sm"></i><span class="text-sm font-semibold">Espace mémoire utilisé</span></div>
+                        <span id="storageUsage" class="text-xs text-inGray font-bold">Calcul...</span>
                     </div>
-                    <button onclick="clearAllData()" class="text-xs text-iosRed font-medium bg-iosRed/10 px-3 py-1.5 rounded-lg">Réinitialiser</button>
+                    <div onclick="clearAllData()" class="p-3.5 flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center space-x-3"><i class="fa-regular fa-trash-can text-inRed text-sm"></i><span class="text-sm font-semibold text-inRed">Vider tout le coffre</span></div>
+                        <i class="fa-solid fa-chevron-right text-xs text-inRed"></i>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- BOUTON FLOTTANT TYPE MENU CIRCULAIRE (+) STYLE INCALC -->
-        <div id="fabContainer" class="fixed bottom-20 right-5 z-30 flex flex-col items-end space-y-2">
-            <div id="fabMenu" class="hidden flex flex-col items-end space-y-2 transition-all">
-                <label class="w-11 h-11 rounded-full bg-yellow-500 text-black shadow-lg flex items-center justify-center active:scale-90 transition cursor-pointer">
-                    <i class="fa-solid fa-folder-plus text-sm"></i>
+        <!-- BOUTON FLOTTANT -->
+        <div id="fabContainer" class="fixed bottom-20 right-5 z-30 flex flex-col items-end space-y-3">
+            <div id="fabMenu" class="hidden flex flex-col items-end space-y-3">
+                <button onclick="openCreateFolderModal()" class="w-12 h-12 rounded-full bg-amber-400 text-black shadow-xl flex items-center justify-center active:scale-90 transition">
+                    <i class="fa-solid fa-folder-plus text-base"></i>
+                </button>
+                <label class="w-12 h-12 rounded-full bg-purple-300 text-purple-900 shadow-xl flex items-center justify-center active:scale-90 transition cursor-pointer">
+                    <i class="fa-solid fa-image text-base"></i>
                     <input type="file" id="fabFileInput" multiple accept="image/*,video/*" class="hidden" onchange="handleFabUpload(event)">
                 </label>
             </div>
-            <button onclick="toggleFabMenu()" id="fabMainBtn" class="w-13 h-13 rounded-full bg-iosPurple text-white shadow-2xl flex items-center justify-center active:scale-90 transition text-xl">
+            <button onclick="toggleFabMenu()" id="fabMainBtn" class="w-14 h-14 rounded-full bg-inPurple text-white shadow-2xl flex items-center justify-center active:scale-90 transition text-2xl">
                 <i class="fa-solid fa-plus"></i>
             </button>
         </div>
     </main>
 
-    <!-- BARRE DE NAVIGATION INFÉRIEURE AVEC ACCÈS RAPIDE -->
-    <nav class="shrink-0 bg-iosBg/90 backdrop-blur-md border-t border-iosCardBorder/60 px-5 pt-2.5 flex justify-around items-center z-20">
-        <button onclick="switchTab('folders')" id="nav-folders" class="nav-item flex flex-col items-center space-y-1 text-iosPurple">
+    <!-- BARRE DE NAVIGATION INFÉRIEURE -->
+    <nav class="shrink-0 bg-inBg/95 backdrop-blur-md border-t border-inCardBorder/60 px-5 pt-2.5 flex justify-around items-center z-20">
+        <button onclick="switchTab('folders')" id="nav-folders" class="nav-item flex flex-col items-center space-y-1 text-inPurple">
             <i class="fa-solid fa-folder text-lg"></i>
-            <span class="text-[10px] font-medium">Dossiers</span>
+            <span class="text-[10px] font-bold">Albums</span>
         </button>
-        <button onclick="switchTab('browser')" id="nav-browser" class="nav-item flex flex-col items-center space-y-1 text-iosGray">
+        <button onclick="switchTab('browser')" id="nav-browser" class="nav-item flex flex-col items-center space-y-1 text-inGray">
             <i class="fa-solid fa-compass text-lg"></i>
-            <span class="text-[10px] font-medium">Web</span>
+            <span class="text-[10px] font-bold">Web</span>
         </button>
-        <button onclick="switchTab('slideshow')" id="nav-slideshow" class="nav-item flex flex-col items-center space-y-1 text-iosGray">
+        <button onclick="switchTab('slideshow')" id="nav-slideshow" class="nav-item flex flex-col items-center space-y-1 text-inGray">
             <i class="fa-solid fa-shuffle text-lg"></i>
-            <span class="text-[10px] font-medium">Aléatoire</span>
+            <span class="text-[10px] font-bold">Aléatoire</span>
         </button>
-        <button onclick="switchTab('settings')" id="nav-settings" class="nav-item flex flex-col items-center space-y-1 text-iosGray">
+        <button onclick="switchTab('settings')" id="nav-settings" class="nav-item flex flex-col items-center space-y-1 text-inGray">
             <i class="fa-solid fa-gear text-lg"></i>
-            <span class="text-[10px] font-medium">Réglages</span>
+            <span class="text-[10px] font-bold">Réglages</span>
         </button>
     </nav>
 
-    <!-- VISIONNEUSE GRAND ÉCRAN STYLE INCALC AVEC BARRE D'ACTIONS -->
-    <div id="mediaViewerModal" class="fixed inset-0 z-50 bg-black hidden flex flex-col items-center justify-between p-4 backdrop-blur-md touch-none">
+    <!-- VISIONNEUSE DE MÉDIAS -->
+    <div id="mediaViewerModal" class="fixed inset-0 z-50 bg-black hidden flex flex-col items-center justify-between p-4 touch-none">
         <div class="w-full flex items-center justify-between z-10 pt-safe px-2">
-            <button onclick="closeMediaViewer()" class="w-10 h-10 rounded-full bg-iosCard border border-iosCardBorder text-white flex items-center justify-center active:scale-90 transition">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-            <span id="viewerCounter" class="text-xs text-iosGray font-semibold">1 / 1</span>
+            <button onclick="closeMediaViewer()" class="text-white text-xl p-2"><i class="fa-solid fa-chevron-left"></i></button>
+            <span id="viewerCounter" class="text-xs text-inGray font-bold">1 / 1</span>
+            <button onclick="deleteViewerMedia()" class="text-inRed text-sm p-2"><i class="fa-regular fa-trash-can"></i></button>
         </div>
 
         <div id="viewerContent" class="w-full flex-1 flex items-center justify-center p-2 my-auto overflow-hidden"></div>
 
-        <!-- BARRE D'ACTIONS INFERIEURE VISIONNEUSE -->
-        <div class="w-full bg-iosCard/80 backdrop-blur-md border border-iosCardBorder rounded-2xl py-3 px-6 flex justify-around items-center z-10 pb-safe">
-            <button onclick="navigateViewer(-1)" class="flex flex-col items-center text-iosGray active:text-white">
-                <i class="fa-solid fa-chevron-left text-sm"></i>
-                <span class="text-[9px] mt-1">Préc.</span>
-            </button>
-            <button onclick="openMoveModal()" class="flex flex-col items-center text-iosGray active:text-white">
-                <i class="fa-solid fa-right-to-bracket text-sm"></i>
-                <span class="text-[9px] mt-1">Déplacer</span>
-            </button>
-            <button onclick="deleteViewerMedia()" class="flex flex-col items-center text-iosRed active:scale-95">
-                <i class="fa-regular fa-trash-can text-sm"></i>
-                <span class="text-[9px] mt-1">Supprimer</span>
-            </button>
-            <button onclick="navigateViewer(1)" class="flex flex-col items-center text-iosGray active:text-white">
-                <i class="fa-solid fa-chevron-right text-sm"></i>
-                <span class="text-[9px] mt-1">Suiv.</span>
-            </button>
+        <div class="w-full border-t border-inCardBorder/60 pt-3 pb-safe px-6 flex justify-around items-center z-10 bg-inBg/90 backdrop-blur-md">
+            <button onclick="navigateViewer(-1)" class="flex flex-col items-center text-inGray active:text-white"><i class="fa-solid fa-chevron-left text-sm"></i><span class="text-[9px] mt-1">Préc.</span></button>
+            <button onclick="openMoveModalSingle()" class="flex flex-col items-center text-inGray active:text-white"><i class="fa-solid fa-right-to-bracket text-sm"></i><span class="text-[9px] mt-1">Déplacer</span></button>
+            <button onclick="deleteViewerMedia()" class="flex flex-col items-center text-inRed"><i class="fa-regular fa-trash-can text-sm"></i><span class="text-[9px] mt-1">Supprimer</span></button>
+            <button onclick="navigateViewer(1)" class="flex flex-col items-center text-inGray active:text-white"><i class="fa-solid fa-chevron-right text-sm"></i><span class="text-[9px] mt-1">Suiv.</span></button>
         </div>
     </div>
 
-    <!-- MODAL DÉPLACEMENT DE DOSSIER -->
-    <div id="moveMediaModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 touch-none">
-        <div class="bg-iosCard border border-iosCardBorder w-full max-w-sm rounded-2xl p-5 space-y-4">
-            <h3 class="font-semibold text-base">Déplacer vers un dossier</h3>
+    <!-- MODAL DE DÉPLACEMENT DE DOSSIER DE DESTINATION -->
+    <div id="moveMediaModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-inCard border border-inCardBorder w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl">
+            <h3 class="font-bold text-base text-white">Choisir l'album de destination</h3>
             <div id="targetFolderList" class="space-y-2 max-h-48 overflow-y-auto hide-scrollbar"></div>
-            <div class="flex justify-end space-x-2 pt-2 border-t border-iosCardBorder">
-                <button onclick="closeMoveModal()" class="px-4 py-2 text-xs text-iosGray">Annuler</button>
+            <div class="flex justify-end space-x-2 pt-2 border-t border-inCardBorder">
+                <button onclick="closeMoveModal()" class="px-4 py-2 text-xs text-inGray font-bold">Annuler</button>
             </div>
         </div>
     </div>
 
     <!-- OVERLAY DIAPORAMA -->
-    <div id="slideshowOverlay" class="fixed inset-0 z-50 bg-black hidden flex items-center justify-center touch-none">
-        <button onclick="stopSlideshow()" class="absolute top-8 left-6 z-50 w-10 h-10 rounded-full bg-black/40 text-white backdrop-blur-md flex items-center justify-center active:scale-90 transition">
-            <i class="fa-solid fa-xmark text-lg"></i>
+    <div id="slideshowOverlay" class="fixed inset-0 z-50 bg-black hidden flex items-center justify-center">
+        <button onclick="stopSlideshow()" class="absolute left-6 z-50 w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white/90 backdrop-blur-md flex items-center justify-center active:scale-90 transition" style="top: 35%;">
+            <i class="fa-solid fa-xmark text-xl"></i>
         </button>
         <div id="slideshowMediaContainer" class="w-full h-full flex items-center justify-center p-0"></div>
     </div>
 
     <script>
-        // SÉCURITÉ GESTES IPHONE 15 PLUS
-        document.addEventListener('gesturestart', e => e.preventDefault());
-        document.addEventListener('touchmove', e => { if (e.scale && e.scale !== 1) e.preventDefault(); }, { passive: false });
-
         let currentPin = "0507";
         let enteredPin = "";
         let db = null;
@@ -347,8 +381,48 @@
         let activeSlideshowIndex = 0;
         let currentFolderMediaList = [];
         let currentViewerIndex = 0;
+        
+        // Mode Sélection
         let isSelectMode = false;
         let selectedMediaIds = new Set();
+        let longPressTimer = null;
+        let isLongPressTriggered = false;
+        let lastTapTime = 0;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const keys = document.querySelectorAll(".pin-btn");
+            keys.forEach(key => {
+                const handlePress = (e) => {
+                    e.preventDefault();
+                    const digit = key.getAttribute("data-key");
+                    if (digit) enterPin(digit);
+                };
+                key.addEventListener("touchstart", handlePress, { passive: false });
+                key.addEventListener("click", handlePress);
+            });
+
+            const clearBtn = document.getElementById("clearPinBtn");
+            if (clearBtn) {
+                const handleClear = (e) => {
+                    e.preventDefault();
+                    clearPin();
+                };
+                clearBtn.addEventListener("touchstart", handleClear, { passive: false });
+                clearBtn.addEventListener("click", handleClear);
+            }
+
+            const slideshowContainer = document.getElementById("slideshowOverlay");
+            slideshowContainer.addEventListener("click", (e) => {
+                if (e.target.closest("button")) return;
+                const now = new Date().getTime();
+                if (now - lastTapTime < 300) {
+                    nextSlide();
+                }
+                lastTapTime = now;
+            });
+
+            initDB();
+        });
 
         function initDB() {
             return new Promise((resolve, reject) => {
@@ -383,41 +457,49 @@
                             enteredPin = "";
                             updatePinDots();
                         }
-                    }, 150);
+                    }, 120);
                 }
             }
         }
 
-        function clearPin() { enteredPin = enteredPin.slice(0, -1); updatePinDots(); }
+        function clearPin() {
+            enteredPin = enteredPin.slice(0, -1);
+            updatePinDots();
+        }
+
         function updatePinDots() {
             document.querySelectorAll("#pinDots div").forEach((dot, idx) => {
-                dot.className = idx < enteredPin.length ? "w-3.5 h-3.5 rounded-full bg-iosPurple border-iosPurple" : "w-3.5 h-3.5 rounded-full border border-iosGray";
+                if (idx < enteredPin.length) {
+                    dot.className = "w-4 h-4 rounded-full bg-inPurple border-2 border-inPurple scale-110 transition-all duration-150";
+                } else {
+                    dot.className = "w-4 h-4 rounded-full border-2 border-inGray/50 transition-all duration-150";
+                }
             });
         }
 
         function switchTab(tab) {
             document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-            document.querySelectorAll(".nav-item").forEach(el => el.className = "nav-item flex flex-col items-center space-y-1 text-iosGray");
+            document.querySelectorAll(".nav-item").forEach(el => el.className = "nav-item flex flex-col items-center space-y-1 text-inGray");
 
             if (tab === 'folders') {
                 document.getElementById("tabFolders").classList.remove("hidden");
-                document.getElementById("nav-folders").className = "nav-item flex flex-col items-center space-y-1 text-iosPurple";
-                document.getElementById("headerTitle").innerText = "Coffre";
+                document.getElementById("nav-folders").className = "nav-item flex flex-col items-center space-y-1 text-inPurple";
+                document.getElementById("headerTitle").innerText = "InCalc";
                 document.getElementById("fabContainer").classList.remove("hidden");
             } else if (tab === 'browser') {
                 document.getElementById("tabBrowser").classList.remove("hidden");
-                document.getElementById("nav-browser").className = "nav-item flex flex-col items-center space-y-1 text-iosPurple";
+                document.getElementById("nav-browser").className = "nav-item flex flex-col items-center space-y-1 text-inPurple";
                 document.getElementById("headerTitle").innerText = "Navigateur";
                 document.getElementById("fabContainer").classList.add("hidden");
             } else if (tab === 'slideshow') {
                 document.getElementById("tabSlideshow").classList.remove("hidden");
-                document.getElementById("nav-slideshow").className = "nav-item flex flex-col items-center space-y-1 text-iosPurple";
+                document.getElementById("nav-slideshow").className = "nav-item flex flex-col items-center space-y-1 text-inPurple";
                 document.getElementById("headerTitle").innerText = "Diaporama";
                 document.getElementById("fabContainer").classList.add("hidden");
                 renderSlideshowFolderList();
             } else if (tab === 'settings') {
                 document.getElementById("tabSettings").classList.remove("hidden");
-                document.getElementById("nav-settings").className = "nav-item flex flex-col items-center space-y-1 text-iosPurple";
+                document.getElementById("nav-settings").className = "nav-item flex flex-col items-center space-y-1 text-inPurple";
                 document.getElementById("headerTitle").innerText = "Réglages";
                 document.getElementById("fabContainer").classList.add("hidden");
                 updateStorageUsage();
@@ -425,13 +507,12 @@
         }
 
         function toggleFabMenu() {
-            const menu = document.getElementById("fabMenu");
-            menu.classList.toggle("hidden");
+            document.getElementById("fabMenu").classList.toggle("hidden");
         }
 
         function handleFabUpload(event) {
             if (!currentFolderId) {
-                alert("Ouvrez d'abord un dossier avant d'ajouter des fichiers.");
+                alert("Sélectionnez d'abord un album pour y ajouter des médias.");
                 return;
             }
             handleMediaUpload(event);
@@ -439,7 +520,7 @@
         }
 
         function openCreateFolderModal() {
-            const folderName = prompt("Nom du nouveau dossier :");
+            const folderName = prompt("Nom du nouvel album :");
             if (folderName && folderName.trim() !== "") {
                 const tx = db.transaction("folders", "readwrite");
                 tx.objectStore("folders").add({ id: 'folder_' + Date.now(), name: folderName.trim(), createdAt: new Date() });
@@ -454,21 +535,28 @@
             tx.objectStore("folders").getAll().onsuccess = (e) => {
                 const folders = e.target.result;
                 if (folders.length === 0) {
-                    grid.innerHTML = `<div class="col-span-2 text-center py-12 text-iosGray text-sm">Aucun dossier. Appuyez sur + pour en créer un.</div>`;
+                    grid.innerHTML = `<div class="col-span-2 text-center py-12 text-inGray text-sm">Aucun album. Appuyez sur + pour en créer un.</div>`;
                     return;
                 }
                 folders.forEach(folder => {
                     tx.objectStore("media").index("folderId").getAll(folder.id).onsuccess = (mEv) => {
                         const medias = mEv.target.result;
                         const card = document.createElement("div");
-                        card.className = "bg-iosCard border border-iosCardBorder p-3 rounded-2xl flex flex-col justify-between h-44 active:scale-95 transition cursor-pointer overflow-hidden shadow-lg";
+                        card.className = "bg-inCard border border-inCardBorder p-3 rounded-2xl flex flex-col justify-between h-48 active:scale-95 transition cursor-pointer overflow-hidden shadow-xl";
                         card.onclick = () => openFolder(folder.id, folder.name);
 
-                        let previewHTML = medias.length > 0 ? `<div class="grid grid-cols-2 gap-1 w-full h-24 rounded-xl overflow-hidden bg-black/40 p-1 mb-2">` + 
-                            medias.slice(0, 4).map(m => `<img src="${URL.createObjectURL(m.fileData)}" class="w-full h-full object-cover rounded">`).join('') + `</div>` :
-                            `<div class="w-full h-24 bg-black/40 rounded-xl flex items-center justify-center mb-2"><i class="fa-solid fa-folder text-3xl text-iosPurple/70"></i></div>`;
+                        let previewHTML = medias.length > 0 ? 
+                            `<div class="w-full h-28 rounded-xl overflow-hidden bg-black/40 mb-2 relative"><img src="${URL.createObjectURL(medias[0].fileData)}" class="w-full h-full object-cover"></div>` :
+                            `<div class="w-full h-28 bg-black/40 rounded-xl flex items-center justify-center mb-2"><i class="fa-solid fa-folder text-3xl text-inPurple/70"></i></div>`;
 
-                        card.innerHTML = `${previewHTML}<div class="mt-auto"><div class="font-bold text-xs truncate">${folder.name}</div><div class="text-[10px] text-iosGray">${medias.length} média(s)</div></div>`;
+                        card.innerHTML = `${previewHTML}
+                            <div class="mt-auto flex items-center justify-between">
+                                <div class="truncate">
+                                    <div class="font-bold text-xs truncate">${folder.name}</div>
+                                    <div class="text-[10px] text-inGray mt-0.5"><i class="fa-solid fa-image text-[9px] mr-1"></i>${medias.length}</div>
+                                </div>
+                                <i class="fa-solid fa-ellipsis-vertical text-inGray text-xs"></i>
+                            </div>`;
                         grid.appendChild(card);
                     };
                 });
@@ -477,6 +565,7 @@
 
         function openFolder(folderId, folderName) {
             currentFolderId = folderId;
+            exitSelectMode();
             document.getElementById("currentFolderName").innerText = folderName;
             document.getElementById("foldersGrid").classList.add("hidden");
             document.getElementById("folderDetailView").classList.remove("hidden");
@@ -485,9 +574,143 @@
 
         function closeFolderDetail() {
             currentFolderId = null;
+            exitSelectMode();
             document.getElementById("folderDetailView").classList.add("hidden");
             document.getElementById("foldersGrid").classList.remove("hidden");
             loadFolders();
+        }
+
+        function deleteCurrentFolder() {
+            if (!currentFolderId) return;
+            if (confirm("Voulez-vous vraiment supprimer cet album et tous ses éléments ?")) {
+                const tx = db.transaction(["folders", "media"], "readwrite");
+                tx.objectStore("folders").delete(currentFolderId);
+                
+                const mediaStore = tx.objectStore("media");
+                const index = mediaStore.index("folderId");
+                index.getAllKeys(currentFolderId).onsuccess = (e) => {
+                    e.target.result.forEach(key => mediaStore.delete(key));
+                };
+                
+                tx.oncomplete = () => closeFolderDetail();
+            }
+        }
+
+        // --- NOUVELLE GESTION DE LA SÉLECTION PAR APPUI LONG ---
+        function activateSelectMode(initialItemId) {
+            isSelectMode = true;
+            if (initialItemId) {
+                selectedMediaIds.add(initialItemId);
+            }
+            if (navigator.vibrate) navigator.vibrate(50); // Retour haptique si supporté
+            updateSelectionUI();
+        }
+
+        function exitSelectMode() {
+            isSelectMode = false;
+            selectedMediaIds.clear();
+            updateSelectionUI();
+        }
+
+        function updateSelectionUI() {
+            const actionBar = document.getElementById("selectionActionBar");
+            const hint = document.getElementById("longPressHint");
+            const countLabel = document.getElementById("selectedCount");
+            const selectAllBtn = document.getElementById("selectAllMediaBtn");
+
+            if (isSelectMode) {
+                actionBar.classList.remove("hidden");
+                if (hint) hint.classList.add("hidden");
+                countLabel.innerText = selectedMediaIds.size;
+
+                if (selectedMediaIds.size === currentFolderMediaList.length && currentFolderMediaList.length > 0) {
+                    selectAllBtn.innerHTML = `<i class="fa-solid fa-square-check"></i> <span>Tout désélectionner</span>`;
+                } else {
+                    selectAllBtn.innerHTML = `<i class="fa-regular fa-square-check"></i> <span>Tout sélectionner</span>`;
+                }
+            } else {
+                actionBar.classList.add("hidden");
+                if (hint) hint.classList.remove("hidden");
+            }
+            loadFolderMedia(currentFolderId);
+        }
+
+        function toggleMediaSelection(id) {
+            if (selectedMediaIds.has(id)) {
+                selectedMediaIds.delete(id);
+            } else {
+                selectedMediaIds.add(id);
+            }
+            
+            // Si l'utilisateur décoche tous les éléments, on peut soit garder le mode sélection soit le fermer
+            updateSelectionUI();
+        }
+
+        function toggleSelectAllMedia() {
+            if (selectedMediaIds.size === currentFolderMediaList.length) {
+                selectedMediaIds.clear();
+            } else {
+                currentFolderMediaList.forEach(m => selectedMediaIds.add(m.id));
+            }
+            updateSelectionUI();
+        }
+
+        function deleteSelectedMedia() {
+            if (selectedMediaIds.size === 0) {
+                alert("Veuillez sélectionner au moins un élément.");
+                return;
+            }
+            if (confirm(`Supprimer définitivement les ${selectedMediaIds.size} éléments sélectionnés ?`)) {
+                const tx = db.transaction("media", "readwrite");
+                const store = tx.objectStore("media");
+                selectedMediaIds.forEach(id => store.delete(id));
+                tx.oncomplete = () => {
+                    exitSelectMode();
+                };
+            }
+        }
+
+        function openMoveModalMultiple() {
+            if (selectedMediaIds.size === 0) {
+                alert("Veuillez sélectionner au moins un élément.");
+                return;
+            }
+            const container = document.getElementById("targetFolderList");
+            container.innerHTML = "";
+            const tx = db.transaction("folders", "readonly");
+            tx.objectStore("folders").getAll().onsuccess = (e) => {
+                const folders = e.target.result.filter(f => f.id !== currentFolderId);
+                if (folders.length === 0) {
+                    container.innerHTML = `<div class="text-xs text-inGray text-center py-4">Aucun autre album disponible.</div>`;
+                } else {
+                    folders.forEach(f => {
+                        const btn = document.createElement("button");
+                        btn.className = "w-full p-3 bg-inBg rounded-xl border border-inCardBorder text-left text-xs font-bold text-white active:bg-inPurple/30 transition flex items-center justify-between";
+                        btn.innerHTML = `<span>${f.name}</span><i class="fa-solid fa-chevron-right text-[10px] text-inGray"></i>`;
+                        btn.onclick = () => executeMoveMultiple(f.id);
+                        container.appendChild(btn);
+                    });
+                }
+                document.getElementById("moveMediaModal").classList.remove("hidden");
+            };
+        }
+
+        function executeMoveMultiple(targetFolderId) {
+            const tx = db.transaction("media", "readwrite");
+            const store = tx.objectStore("media");
+            selectedMediaIds.forEach(id => {
+                store.get(id).onsuccess = (e) => {
+                    const item = e.target.result;
+                    if (item) {
+                        item.folderId = targetFolderId;
+                        store.put(item);
+                    }
+                };
+            });
+            tx.oncomplete = () => {
+                closeMoveModal();
+                exitSelectMode();
+            };
         }
 
         function handleMediaUpload(event) {
@@ -516,23 +739,71 @@
             tx.objectStore("media").index("folderId").getAll(folderId).onsuccess = (e) => {
                 currentFolderMediaList = e.target.result;
                 if (currentFolderMediaList.length === 0) {
-                    grid.innerHTML = `<div class="col-span-2 text-center py-8 text-iosGray text-xs">Dossier vide.</div>`;
+                    grid.innerHTML = `<div class="col-span-2 text-center py-10 text-inGray text-xs">Album vide. Touchez le + pour ajouter des photos.</div>`;
                     return;
                 }
                 currentFolderMediaList.forEach((item, index) => {
                     const url = URL.createObjectURL(item.fileData);
                     const el = document.createElement("div");
-                    el.className = "relative aspect-square bg-black rounded-xl overflow-hidden border border-iosCardBorder group cursor-pointer active:scale-95 transition shadow-md";
-                    el.onclick = () => openMediaViewer(index);
+                    el.className = "relative aspect-square bg-black rounded-xl overflow-hidden border border-inCardBorder cursor-pointer active:scale-95 transition shadow-md select-none";
+
+                    const isChecked = selectedMediaIds.has(item.id);
+
+                    // ÉVÉNEMENTS D'APPUI LONG & TACTILE
+                    const startLongPress = (ev) => {
+                        isLongPressTriggered = false;
+                        longPressTimer = setTimeout(() => {
+                            isLongPressTriggered = true;
+                            if (!isSelectMode) {
+                                activateSelectMode(item.id);
+                            } else {
+                                toggleMediaSelection(item.id);
+                            }
+                        }, 500); // Seuil d'appui long : 500 millisecondes
+                    };
+
+                    const cancelLongPress = () => {
+                        if (longPressTimer) clearTimeout(longPressTimer);
+                    };
+
+                    const handleClick = (ev) => {
+                        cancelLongPress();
+                        if (isLongPressTriggered) {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            return;
+                        }
+
+                        if (isSelectMode) {
+                            toggleMediaSelection(item.id);
+                        } else {
+                            openMediaViewer(index);
+                        }
+                    };
+
+                    el.addEventListener("touchstart", startLongPress, { passive: true });
+                    el.addEventListener("touchend", cancelLongPress);
+                    el.addEventListener("touchmove", cancelLongPress);
+                    el.addEventListener("mousedown", startLongPress);
+                    el.addEventListener("mouseup", cancelLongPress);
+                    el.addEventListener("mouseleave", cancelLongPress);
+                    el.addEventListener("click", handleClick);
 
                     el.innerHTML = item.type === 'image' ? `<img src="${url}" class="w-full h-full object-cover">` :
                         `<video src="${url}" class="w-full h-full object-cover"></video><div class="absolute inset-0 bg-black/30 flex items-center justify-center"><i class="fa-solid fa-play text-white/80 text-xs"></i></div>`;
+
+                    if (isSelectMode) {
+                        const checkBadge = document.createElement("div");
+                        checkBadge.className = `absolute top-2 right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs shadow-md transition-all ${isChecked ? 'bg-inPurple border-inPurple text-white scale-110' : 'border-white/80 bg-black/50'}`;
+                        checkBadge.innerHTML = isChecked ? '<i class="fa-solid fa-check text-[10px]"></i>' : '';
+                        el.appendChild(checkBadge);
+                    }
+
                     grid.appendChild(el);
                 });
             };
         }
 
-        // NAVIGATEUR WEB
         function loadWebPage() {
             let url = document.getElementById("browserUrlInput").value.trim();
             if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
@@ -549,7 +820,47 @@
             if (url) openBookmark(url);
         }
 
-        // VISIONNEUSE
+        function openMoveModalSingle() {
+            const container = document.getElementById("targetFolderList");
+            container.innerHTML = "";
+            const tx = db.transaction("folders", "readonly");
+            tx.objectStore("folders").getAll().onsuccess = (e) => {
+                const folders = e.target.result.filter(f => f.id !== currentFolderId);
+                if (folders.length === 0) {
+                    container.innerHTML = `<div class="text-xs text-inGray text-center py-4">Aucun autre album disponible.</div>`;
+                } else {
+                    folders.forEach(f => {
+                        const btn = document.createElement("button");
+                        btn.className = "w-full p-3 bg-inBg rounded-xl border border-inCardBorder text-left text-xs font-bold text-white active:bg-inPurple/30 transition flex items-center justify-between";
+                        btn.innerHTML = `<span>${f.name}</span><i class="fa-solid fa-chevron-right text-[10px] text-inGray"></i>`;
+                        btn.onclick = () => executeMoveSingle(f.id);
+                        container.appendChild(btn);
+                    });
+                }
+                document.getElementById("moveMediaModal").classList.remove("hidden");
+            };
+        }
+
+        function closeMoveModal() {
+            document.getElementById("moveMediaModal").classList.add("hidden");
+        }
+
+        function executeMoveSingle(targetFolderId) {
+            const currentMedia = currentFolderMediaList[currentViewerIndex];
+            if (!currentMedia) return;
+
+            const tx = db.transaction("media", "readwrite");
+            const store = tx.objectStore("media");
+            currentMedia.folderId = targetFolderId;
+            store.put(currentMedia);
+
+            tx.oncomplete = () => {
+                closeMoveModal();
+                closeMediaViewer();
+                loadFolderMedia(currentFolderId);
+            };
+        }
+
         function openMediaViewer(index) {
             currentViewerIndex = index;
             document.getElementById("mediaViewerModal").classList.remove("hidden");
@@ -589,7 +900,218 @@
             }
         }
 
-        window.onload = () => { initDB(); };
+        function renderSlideshowFolderList() {
+            const container = document.getElementById("slideshowFolderList");
+            container.innerHTML = "";
+            const tx = db.transaction("folders", "readonly");
+            tx.objectStore("folders").getAll().onsuccess = (e) => {
+                const folders = e.target.result;
+                if (folders.length === 0) {
+                    container.innerHTML = `<div class="text-xs text-inGray text-center py-2">Aucun album disponible.</div>`;
+                    return;
+                }
+                folders.forEach(f => {
+                    const div = document.createElement("label");
+                    div.className = "flex items-center justify-between p-2.5 bg-inBg rounded-xl border border-inCardBorder text-sm cursor-pointer";
+                    div.innerHTML = `<span class="truncate text-xs font-semibold">${f.name}</span><input type="checkbox" value="${f.id}" class="folder-checkbox w-4 h-4 accent-inPurple rounded">`;
+                    container.appendChild(div);
+                });
+            };
+        }
+
+        function toggleSelectAllFolders() {
+            const checkboxes = document.querySelectorAll(".folder-checkbox");
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            document.getElementById("selectAllBtn").innerText = allChecked ? "Tout sélectionner" : "Tout désélectionner";
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startSlideshow() {
+            const selectedFolderIds = Array.from(document.querySelectorAll(".folder-checkbox:checked")).map(cb => cb.value);
+            if (selectedFolderIds.length === 0) {
+                alert("Veuillez sélectionner au moins un album.");
+                return;
+            }
+
+            const tx = db.transaction("media", "readonly");
+            tx.objectStore("media").getAll().onsuccess = (e) => {
+                const allMedia = e.target.result;
+                activeSlideshowQueue = allMedia.filter(m => selectedFolderIds.includes(m.folderId));
+
+                if (activeSlideshowQueue.length === 0) {
+                    alert("Les albums sélectionnés ne contiennent aucun média.");
+                    return;
+                }
+
+                activeSlideshowQueue = shuffleArray(activeSlideshowQueue);
+                activeSlideshowIndex = 0;
+
+                document.getElementById("slideshowOverlay").classList.remove("hidden");
+                renderSlideshowStep();
+            };
+        }
+
+        function renderSlideshowStep() {
+            clearTimeout(slideshowInterval);
+            if (activeSlideshowQueue.length === 0) return;
+
+            const container = document.getElementById("slideshowMediaContainer");
+            container.innerHTML = "";
+
+            const currentMedia = activeSlideshowQueue[activeSlideshowIndex];
+            const url = URL.createObjectURL(currentMedia.fileData);
+            const timerSec = parseInt(document.getElementById("slideshowTimerSelect").value) || 3;
+
+            if (currentMedia.type === 'image') {
+                const img = document.createElement("img");
+                img.src = url;
+                img.className = "max-w-full max-h-full object-contain";
+                container.appendChild(img);
+
+                slideshowInterval = setTimeout(nextSlide, timerSec * 1000);
+            } else {
+                const video = document.createElement("video");
+                video.src = url;
+                video.autoplay = true;
+                video.playsInline = true;
+                video.controls = false;
+                video.className = "max-w-full max-h-full object-contain";
+                container.appendChild(video);
+
+                slideshowInterval = setTimeout(nextSlide, timerSec * 1000);
+            }
+        }
+
+        function nextSlide() {
+            activeSlideshowIndex = (activeSlideshowIndex + 1) % activeSlideshowQueue.length;
+            renderSlideshowStep();
+        }
+
+        function stopSlideshow() {
+            clearTimeout(slideshowInterval);
+            document.getElementById("slideshowOverlay").classList.add("hidden");
+            document.getElementById("slideshowMediaContainer").innerHTML = "";
+        }
+
+        function updateStorageUsage() {
+            if (navigator.storage && navigator.storage.estimate) {
+                navigator.storage.estimate().then(estimate => {
+                    const mb = (estimate.usage / (1024 * 1024)).toFixed(1);
+                    document.getElementById("storageUsage").innerText = `${mb} Mo`;
+                });
+            }
+        }
+
+        function changePinModal() {
+            const newPin = prompt("Saisissez le nouveau code PIN (4 chiffres) :");
+            if (newPin && newPin.length === 4 && !isNaN(newPin)) {
+                currentPin = newPin;
+                alert("Code PIN mis à jour avec succès.");
+            } else if (newPin !== null) {
+                alert("Code invalide. Le PIN doit comporter 4 chiffres.");
+            }
+        }
+
+        function exportAllToZIP() {
+            if (typeof JSZip === "undefined") {
+                alert("Erreur de chargement de la bibliothèque de compression.");
+                return;
+            }
+            const zip = new JSZip();
+            const tx = db.transaction(["folders", "media"], "readonly");
+
+            tx.objectStore("folders").getAll().onsuccess = (fEv) => {
+                const folders = fEv.target.result;
+                const folderMap = {};
+                folders.forEach(f => folderMap[f.id] = f.name);
+
+                tx.objectStore("media").getAll().onsuccess = (mEv) => {
+                    const medias = mEv.target.result;
+                    if (medias.length === 0) {
+                        alert("Le coffre-fort est vide.");
+                        return;
+                    }
+
+                    medias.forEach(item => {
+                        const folderName = folderMap[item.folderId] || "Sans_Nom";
+                        zip.folder(folderName).file(item.name, item.fileData);
+                    });
+
+                    zip.generateAsync({ type: "blob" }).then(blob => {
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = `InCalc_Sauvegarde_${new Date().toISOString().slice(0, 10)}.zip`;
+                        link.click();
+                    });
+                };
+            };
+        }
+
+        function importZIPFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            JSZip.loadAsync(file).then(zip => {
+                const folderPromises = {};
+
+                zip.forEach((relativePath, zipEntry) => {
+                    if (!zipEntry.dir) {
+                        const parts = relativePath.split('/');
+                        const folderName = parts.length > 1 ? parts[0] : "Importés";
+
+                        if (!folderPromises[folderName]) {
+                            folderPromises[folderName] = new Promise(resolve => {
+                                const tx = db.transaction("folders", "readwrite");
+                                const store = tx.objectStore("folders");
+                                const id = 'folder_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                                store.add({ id, name: folderName, createdAt: new Date() });
+                                tx.oncomplete = () => resolve(id);
+                            });
+                        }
+
+                        folderPromises[folderName].then(folderId => {
+                            zipEntry.async("blob").then(blob => {
+                                const tx = db.transaction("media", "readwrite");
+                                tx.objectStore("media").add({
+                                    id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                                    folderId,
+                                    name: parts[parts.length - 1],
+                                    type: zipEntry.name.match(/\.(mp4|webm|mov)$/i) ? 'video' : 'image',
+                                    fileData: blob,
+                                    createdAt: new Date()
+                                });
+                                tx.oncomplete = () => {
+                                    loadFolders();
+                                    updateStorageUsage();
+                                };
+                            });
+                        });
+                    }
+                });
+            }).catch(() => alert("Impossible de lire ce fichier ZIP."));
+        }
+
+        function clearAllData() {
+            if (confirm("ATTENTION : Cela supprimera définitivement tous vos albums et médias.")) {
+                const tx = db.transaction(["folders", "media"], "readwrite");
+                tx.objectStore("folders").clear();
+                tx.objectStore("media").clear();
+                tx.oncomplete = () => {
+                    alert("Coffre-fort réinitialisé.");
+                    switchTab("folders");
+                    loadFolders();
+                    updateStorageUsage();
+                };
+            }
+        }
     </script>
 </body>
 </html>
