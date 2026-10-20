@@ -2,7 +2,7 @@
 <html lang="fr" class="dark">
 <head>
     <meta charset="UTF-8">
-    <!-- Verrouillage strict du zoom et de la vue mobile iOS/Android -->
+    <!-- Verrouillage strict du zoom et adaptation Safe Area iOS -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -30,7 +30,7 @@
         }
     </script>
     <style>
-        /* SÉCURISATION COMPLETE DU SCROLL, DU ZOOM ET DES DÉCALAGES HORIZONTAUX */
+        /* FIXATION DE L'APPLICATION ET MARGES SÉCURISÉES ENCOCHE / DYNAMIC ISLAND */
         html, body {
             position: fixed;
             width: 100%;
@@ -45,6 +45,15 @@
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #000000;
             color: #ffffff;
+        }
+
+        /* GESTION SAFE AREA DE L'EN-TÊTE ET BARRE INFÉRIEURE */
+        header {
+            padding-top: calc(env(safe-area-inset-top, 20px) + 8px) !important;
+        }
+
+        nav {
+            padding-bottom: calc(env(safe-area-inset-bottom, 10px) + 8px) !important;
         }
 
         .glass {
@@ -98,15 +107,15 @@
         </div>
     </div>
 
-    <!-- EN-TÊTE PRINCIPALE -->
-    <header class="shrink-0 glass border-b border-iosBorder/40 px-5 py-4 flex items-center justify-between z-20 pt-safe">
+    <!-- EN-TÊTE PRINCIPALE AJUSTÉE AVEC SAFE-AREA -->
+    <header class="shrink-0 glass border-b border-iosBorder/40 px-5 pb-4 flex items-center justify-between z-20">
         <h1 id="headerTitle" class="text-2xl font-bold tracking-tight">Dossiers</h1>
         <button id="addFolderBtn" onclick="openCreateFolderModal()" class="w-9 h-9 rounded-full bg-iosBlue/20 text-iosBlue flex items-center justify-center active:scale-95 transition">
             <i class="fa-solid fa-folder-plus text-base"></i>
         </button>
     </header>
 
-    <!-- CONTENU PRINCIPAL DE DÉFILEMENT (SEULEMENT VERTICAL DANS CETTE ZONE) -->
+    <!-- CONTENU PRINCIPAL DE DÉFILEMENT (VERTICAL SEULEMENT) -->
     <main class="flex-1 px-4 pt-4 pb-6 overflow-y-auto overflow-x-hidden hide-scrollbar">
 
         <!-- TAB 1: DOSSIERS ET MÉDIAS -->
@@ -234,7 +243,7 @@
     </main>
 
     <!-- BARRE DE NAVIGATION INFÉRIEURE iOS -->
-    <nav class="shrink-0 glass border-t border-iosBorder/40 px-6 py-3 flex justify-around items-center z-20 pb-safe">
+    <nav class="shrink-0 glass border-t border-iosBorder/40 px-6 pt-3 flex justify-around items-center z-20">
         <button onclick="switchTab('folders')" id="nav-folders" class="nav-item flex flex-col items-center space-y-1 text-iosBlue">
             <i class="fa-solid fa-folder text-lg"></i>
             <span class="text-[10px] font-medium">Dossiers</span>
@@ -294,7 +303,6 @@
 
     <!-- SCRIPT APPLICATION -->
     <script>
-        // BLOQUER TOTALEMENT LE DOUBLE-TAP ZOOM ET LE PINCH ZOOM EN JS NAFIF
         document.addEventListener('gesturestart', function (e) {
             e.preventDefault();
         });
