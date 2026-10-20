@@ -6,6 +6,8 @@
     <title>Vault iOS - Medias & Diaporama</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- JSZip pour la gestion des exports et imports ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -65,7 +67,6 @@
             <div class="w-3.5 h-3.5 rounded-full border border-iosGray transition-all"></div>
         </div>
 
-        <!-- Clavier Numérique Style iOS -->
         <div class="grid grid-cols-3 gap-6 w-full max-w-xs">
             <button onclick="enterPin('1')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">1</button>
             <button onclick="enterPin('2')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">2</button>
@@ -90,12 +91,11 @@
         </button>
     </header>
 
-    <!-- CONTENU PRINCIPAL (ONGLETS) -->
-    <main class="flex-1 px-4 pt-4 pb-24 overflow-y-auto hide-scrollbar">
+    <!-- CONTENU PRINCIPAL -->
+    <main class="flex-1 px-4 pt-4 pb-28 overflow-y-auto hide-scrollbar">
 
         <!-- TAB 1: DOSSIERS ET MÉDIAS -->
         <section id="tabFolders" class="tab-content space-y-4">
-            <!-- Grille des dossiers avec aperçus -->
             <div id="foldersGrid" class="grid grid-cols-2 gap-3"></div>
 
             <!-- Vue Intérieur d'un Dossier -->
@@ -105,14 +105,32 @@
                         <i class="fa-solid fa-chevron-left"></i>
                         <span>Retour</span>
                     </button>
-                    <h2 id="currentFolderName" class="font-semibold text-base truncate max-w-[160px]">Nom dossier</h2>
-                    <button onclick="deleteCurrentFolder()" class="text-iosRed text-sm px-2 py-1 rounded-lg hover:bg-iosRed/10">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </button>
+                    <h2 id="currentFolderName" class="font-semibold text-base truncate max-w-[120px]">Nom dossier</h2>
+                    <div class="flex items-center space-x-2">
+                        <button id="toggleSelectModeBtn" onclick="toggleSelectMode()" class="text-iosBlue text-xs font-semibold bg-iosBlue/15 px-2.5 py-1.5 rounded-lg">
+                            Sélect.
+                        </button>
+                        <button onclick="deleteCurrentFolder()" class="text-iosRed text-sm px-2 py-1 rounded-lg hover:bg-iosRed/10">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Barre d'actions en mode sélection -->
+                <div id="selectionActionBar" class="hidden bg-iosCard p-3 rounded-2xl border border-iosBorder flex items-center justify-between">
+                    <button onclick="toggleSelectAllMedia()" id="selectAllMediaBtn" class="text-xs text-iosBlue font-medium">Tout sélectionner</button>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="openMoveModal()" class="text-xs bg-iosBlue/20 text-iosBlue px-3 py-1.5 rounded-xl font-medium">
+                            Déplacer
+                        </button>
+                        <button onclick="deleteSelectedMedia()" class="text-xs bg-iosRed/20 text-iosRed px-3 py-1.5 rounded-xl font-medium">
+                            Supprimer
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Bouton d'ajout de photos/vidéos -->
-                <label class="w-full py-3.5 bg-iosBlue/15 border border-iosBlue/30 text-iosBlue font-medium rounded-2xl flex items-center justify-center space-x-2 active:scale-[0.98] transition cursor-pointer">
+                <label id="uploadMediaLabel" class="w-full py-3.5 bg-iosBlue/15 border border-iosBlue/30 text-iosBlue font-medium rounded-2xl flex items-center justify-center space-x-2 active:scale-[0.98] transition cursor-pointer">
                     <i class="fa-solid fa-plus text-sm"></i>
                     <span>Ajouter photos & vidéos</span>
                     <input type="file" id="mediaInput" multiple accept="image/*,video/*" class="hidden" onchange="handleMediaUpload(event)">
@@ -162,7 +180,7 @@
             </div>
         </section>
 
-        <!-- TAB 3: RÉGLAGES -->
+        <!-- TAB 3: RÉGLAGES & IMPORT/EXPORT -->
         <section id="tabSettings" class="tab-content hidden space-y-4">
             <div class="bg-iosCard rounded-2xl border border-iosBorder divide-y divide-iosBorder overflow-hidden">
                 <div class="p-4 flex items-center justify-between">
@@ -171,6 +189,23 @@
                         <div class="text-xs text-iosGray mt-0.5">Code par défaut : 0507</div>
                     </div>
                     <button onclick="changePinModal()" class="text-xs text-iosBlue font-medium bg-iosBlue/10 px-3 py-1.5 rounded-lg">Modifier</button>
+                </div>
+
+                <!-- Export & Importation de masse ZIP -->
+                <div class="p-4 space-y-3">
+                    <div class="font-medium text-sm">Sauvegarde & Importation ZIP</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="exportAllToZIP()" class="py-2.5 bg-iosBlue/15 border border-iosBlue/30 text-iosBlue text-xs font-semibold rounded-xl flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-file-export"></i>
+                            <span>Exporter (ZIP)</span>
+                        </button>
+                        <label class="py-2.5 bg-iosBlue/15 border border-iosBlue/30 text-iosBlue text-xs font-semibold rounded-xl flex items-center justify-center space-x-1.5 cursor-pointer">
+                            <i class="fa-solid fa-file-import"></i>
+                            <span>Importer (ZIP)</span>
+                            <input type="file" id="importZipInput" accept=".zip" class="hidden" onchange="importZIPFile(event)">
+                        </label>
+                    </div>
+                    <div class="text-[11px] text-iosGray">L'importation créera automatiquement le dossier "Importés".</div>
                 </div>
 
                 <div class="p-4 flex items-center justify-between">
@@ -200,9 +235,8 @@
         </button>
     </nav>
 
-    <!-- VISIONNEUSE DE MÉDIAS EN GRAND -->
+    <!-- VISIONNEUSE DE MÉDIAS -->
     <div id="mediaViewerModal" class="fixed inset-0 z-50 bg-black/95 hidden flex flex-col items-center justify-between p-4 backdrop-blur-md">
-        <!-- Barre supérieure visionneuse -->
         <div class="w-full flex items-center justify-between z-10 pt-2 px-2">
             <button onclick="closeMediaViewer()" class="w-10 h-10 rounded-full bg-iosCard border border-iosBorder text-white/80 flex items-center justify-center active:scale-90 transition">
                 <i class="fa-solid fa-xmark text-lg"></i>
@@ -212,10 +246,8 @@
             </button>
         </div>
 
-        <!-- Zone d'affichage du média -->
         <div id="viewerContent" class="w-full flex-1 flex items-center justify-center p-2 my-auto overflow-hidden"></div>
 
-        <!-- Controles bas visionneuse -->
         <div class="w-full flex items-center justify-between pb-4 px-6 z-10">
             <button onclick="navigateViewer(-1)" class="w-12 h-12 rounded-full bg-iosCard border border-iosBorder text-white flex items-center justify-center active:scale-90 transition">
                 <i class="fa-solid fa-chevron-left text-lg"></i>
@@ -227,7 +259,18 @@
         </div>
     </div>
 
-    <!-- MODAL DU DIAPORAMA ULTRA-ÉPURÉ -->
+    <!-- MODAL DE DÉPLACEMENT DE DOSSIER -->
+    <div id="moveMediaModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-iosCard border border-iosBorder w-full max-w-sm rounded-2xl p-5 space-y-4">
+            <h3 class="font-semibold text-base">Déplacer vers un dossier</h3>
+            <div id="targetFolderList" class="space-y-2 max-h-48 overflow-y-auto"></div>
+            <div class="flex justify-end space-x-2 pt-2 border-t border-iosBorder">
+                <button onclick="closeMoveModal()" class="px-4 py-2 text-xs text-iosGray">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY DIAPORAMA -->
     <div id="slideshowOverlay" class="fixed inset-0 z-50 bg-black hidden flex items-center justify-center">
         <button onclick="stopSlideshow()" class="absolute top-6 left-6 z-50 w-10 h-10 rounded-full bg-black/40 text-white/70 hover:text-white backdrop-blur-md flex items-center justify-center transition active:scale-90">
             <i class="fa-solid fa-xmark text-lg"></i>
@@ -245,9 +288,12 @@
         let activeSlideshowQueue = [];
         let activeSlideshowIndex = 0;
 
-        // Variables pour la visionneuse
         let currentFolderMediaList = [];
         let currentViewerIndex = 0;
+
+        // Variables Mode Sélection
+        let isSelectMode = false;
+        let selectedMediaIds = new Set();
 
         function initDB() {
             return new Promise((resolve, reject) => {
@@ -349,7 +395,6 @@
             }
         }
 
-        // CHARGEMENT DES DOSSIERS AVEC APERÇU MINIATURES
         function loadFolders() {
             const grid = document.getElementById("foldersGrid");
             grid.innerHTML = "";
@@ -408,10 +453,15 @@
 
         function openFolder(folderId, folderName) {
             currentFolderId = folderId;
+            isSelectMode = false;
+            selectedMediaIds.clear();
             document.getElementById("currentFolderName").innerText = folderName;
             document.getElementById("foldersGrid").classList.add("hidden");
             document.getElementById("folderDetailView").classList.remove("hidden");
             document.getElementById("addFolderBtn").classList.add("hidden");
+            document.getElementById("selectionActionBar").classList.add("hidden");
+            document.getElementById("uploadMediaLabel").classList.remove("hidden");
+            document.getElementById("toggleSelectModeBtn").innerText = "Sélect.";
             loadFolderMedia(folderId);
         }
 
@@ -481,7 +531,14 @@
                     const url = URL.createObjectURL(item.fileData);
                     const el = document.createElement("div");
                     el.className = "relative aspect-square bg-black rounded-xl overflow-hidden border border-iosBorder group cursor-pointer active:scale-95 transition";
-                    el.onclick = () => openMediaViewer(index);
+                    
+                    if (isSelectMode) {
+                        el.onclick = () => toggleMediaSelection(item.id);
+                    } else {
+                        el.onclick = () => openMediaViewer(index);
+                    }
+
+                    const isChecked = selectedMediaIds.has(item.id);
 
                     if (item.type === 'image') {
                         el.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
@@ -493,8 +550,112 @@
                             </div>
                         `;
                     }
+
+                    if (isSelectMode) {
+                        const checkBadge = document.createElement("div");
+                        checkBadge.className = `absolute top-2 right-2 w-5 h-5 rounded-full border flex items-center justify-center text-[10px] ${isChecked ? 'bg-iosBlue border-iosBlue text-white' : 'border-white/70 bg-black/40'}`;
+                        checkBadge.innerHTML = isChecked ? '<i class="fa-solid fa-check"></i>' : '';
+                        el.appendChild(checkBadge);
+                    }
+
                     grid.appendChild(el);
                 });
+            };
+        }
+
+        // MODE SÉLECTION DANS DOSSIER
+        function toggleSelectMode() {
+            isSelectMode = !isSelectMode;
+            selectedMediaIds.clear();
+            const btn = document.getElementById("toggleSelectModeBtn");
+            const actionBar = document.getElementById("selectionActionBar");
+            const uploadLabel = document.getElementById("uploadMediaLabel");
+
+            if (isSelectMode) {
+                btn.innerText = "Annuler";
+                actionBar.classList.remove("hidden");
+                uploadLabel.classList.add("hidden");
+            } else {
+                btn.innerText = "Sélect.";
+                actionBar.classList.add("hidden");
+                uploadLabel.classList.remove("hidden");
+            }
+            loadFolderMedia(currentFolderId);
+        }
+
+        function toggleMediaSelection(id) {
+            if (selectedMediaIds.has(id)) {
+                selectedMediaIds.delete(id);
+            } else {
+                selectedMediaIds.add(id);
+            }
+            loadFolderMedia(currentFolderId);
+        }
+
+        function toggleSelectAllMedia() {
+            if (selectedMediaIds.size === currentFolderMediaList.length) {
+                selectedMediaIds.clear();
+            } else {
+                currentFolderMediaList.forEach(m => selectedMediaIds.add(m.id));
+            }
+            loadFolderMedia(currentFolderId);
+        }
+
+        function deleteSelectedMedia() {
+            if (selectedMediaIds.size === 0) return;
+            if (confirm(`Supprimer ces ${selectedMediaIds.size} éléments ?`)) {
+                const tx = db.transaction("media", "readwrite");
+                const store = tx.objectStore("media");
+                selectedMediaIds.forEach(id => store.delete(id));
+                tx.oncomplete = () => {
+                    selectedMediaIds.clear();
+                    loadFolderMedia(currentFolderId);
+                };
+            }
+        }
+
+        function openMoveModal() {
+            if (selectedMediaIds.size === 0) return;
+            const container = document.getElementById("targetFolderList");
+            container.innerHTML = "";
+            const tx = db.transaction("folders", "readonly");
+            tx.objectStore("folders").getAll().onsuccess = (e) => {
+                const folders = e.target.result.filter(f => f.id !== currentFolderId);
+                if (folders.length === 0) {
+                    container.innerHTML = `<div class="text-xs text-iosGray text-center">Aucun autre dossier.</div>`;
+                } else {
+                    folders.forEach(f => {
+                        const btn = document.createElement("button");
+                        btn.className = "w-full p-3 bg-black rounded-xl border border-iosBorder text-left text-sm font-medium truncate";
+                        btn.innerText = f.name;
+                        btn.onclick = () => moveSelectedMediaTo(f.id);
+                        container.appendChild(btn);
+                    });
+                }
+                document.getElementById("moveMediaModal").classList.remove("hidden");
+            };
+        }
+
+        function closeMoveModal() {
+            document.getElementById("moveMediaModal").classList.add("hidden");
+        }
+
+        function moveSelectedMediaTo(targetFolderId) {
+            const tx = db.transaction("media", "readwrite");
+            const store = tx.objectStore("media");
+            selectedMediaIds.forEach(id => {
+                store.get(id).onsuccess = (e) => {
+                    const item = e.target.result;
+                    if (item) {
+                        item.folderId = targetFolderId;
+                        store.put(item);
+                    }
+                };
+            });
+            tx.oncomplete = () => {
+                closeMoveModal();
+                selectedMediaIds.clear();
+                loadFolderMedia(currentFolderId);
             };
         }
 
@@ -559,6 +720,79 @@
                     }
                 };
             }
+        }
+
+        // EXPORTATION & IMPORTATION MASSE ZIP
+        async function exportAllToZIP() {
+            const zip = new JSZip();
+            const tx = db.transaction(["folders", "media"], "readonly");
+            const folderStore = tx.objectStore("folders");
+            const mediaStore = tx.objectStore("media");
+
+            const folders = await new Promise(r => folderStore.getAll().onsuccess = e => r(e.target.result));
+            const medias = await new Promise(r => mediaStore.getAll().onsuccess = e => r(e.target.result));
+
+            if (medias.length === 0) {
+                alert("Aucun média à exporter.");
+                return;
+            }
+
+            folders.forEach(f => {
+                const folderMedias = medias.filter(m => m.folderId === f.id);
+                folderMedias.forEach(m => {
+                    zip.folder(f.name).file(m.name, m.fileData);
+                });
+            });
+
+            const content = await zip.generateAsync({ type: "blob" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(content);
+            link.download = `Vault_Export_${Date.now()}.zip`;
+            link.click();
+        }
+
+        async function importZIPFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const zip = await JSZip.loadAsync(file);
+            
+            // Créer automatiquement le dossier "Importés"
+            let importedFolderId = 'folder_' + Date.now();
+            const folderTx = db.transaction("folders", "readwrite");
+            folderTx.objectStore("folders").add({
+                id: importedFolderId,
+                name: "Importés",
+                createdAt: new Date()
+            });
+
+            await new Promise(r => folderTx.oncomplete = r);
+
+            const mediaTx = db.transaction("media", "readwrite");
+            const mediaStore = mediaTx.objectStore("media");
+
+            for (const filename of Object.keys(zip.files)) {
+                const zipObj = zip.files[filename];
+                if (!zipObj.dir) {
+                    const blob = await zipObj.async("blob");
+                    const mediaObj = {
+                        id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                        folderId: importedFolderId,
+                        name: filename.split('/').pop(),
+                        type: filename.match(/\.(mp4|mov|mkv|avi|webm)$/i) ? 'video' : 'image',
+                        fileData: blob,
+                        createdAt: new Date()
+                    };
+                    mediaStore.add(mediaObj);
+                }
+            }
+
+            mediaTx.oncomplete = () => {
+                alert("Importation terminée dans le dossier 'Importés' !");
+                event.target.value = "";
+                loadFolders();
+                updateStorageUsage();
+            };
         }
 
         // DIAPORAMA & RÉGLAGES
@@ -673,7 +907,7 @@
         }
 
         function updateStorageUsage() {
-            if (navigator.storage && navigator.storage.estimate) {
+            if (navigator.storage && navigator.storageestimate) {
                 navigator.storage.estimate().then(estimate => {
                     const mb = (estimate.usage / (1024 * 1024)).toFixed(1);
                     document.getElementById("storageUsage").innerText = `Espace utilisé : ${mb} Mo`;
