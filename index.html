@@ -95,10 +95,10 @@
 
         <!-- TAB 1: DOSSIERS ET MÉDIAS -->
         <section id="tabFolders" class="tab-content space-y-4">
-            <!-- Grille des dossiers -->
+            <!-- Grille des dossiers avec aperçus -->
             <div id="foldersGrid" class="grid grid-cols-2 gap-3"></div>
 
-            <!-- Vue Intérieur d'un Dossier (Caché par défaut) -->
+            <!-- Vue Intérieur d'un Dossier -->
             <div id="folderDetailView" class="hidden space-y-4">
                 <div class="flex items-center justify-between bg-iosCard/60 p-3 rounded-2xl border border-iosBorder">
                     <button onclick="closeFolderDetail()" class="text-iosBlue flex items-center space-x-1 font-medium text-sm">
@@ -200,20 +200,43 @@
         </button>
     </nav>
 
-    <!-- MODAL DU DIAPORAMA ULTRA-ÉPURÉ (SEULEMENT UNE CROIX DISCRÈTE) -->
+    <!-- VISIONNEUSE DE MÉDIAS EN GRAND -->
+    <div id="mediaViewerModal" class="fixed inset-0 z-50 bg-black/95 hidden flex flex-col items-center justify-between p-4 backdrop-blur-md">
+        <!-- Barre supérieure visionneuse -->
+        <div class="w-full flex items-center justify-between z-10 pt-2 px-2">
+            <button onclick="closeMediaViewer()" class="w-10 h-10 rounded-full bg-iosCard border border-iosBorder text-white/80 flex items-center justify-center active:scale-90 transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <button onclick="deleteViewerMedia()" class="text-iosRed bg-iosRed/15 px-3 py-1.5 rounded-xl text-xs font-medium">
+                Supprimer
+            </button>
+        </div>
+
+        <!-- Zone d'affichage du média -->
+        <div id="viewerContent" class="w-full flex-1 flex items-center justify-center p-2 my-auto overflow-hidden"></div>
+
+        <!-- Controles bas visionneuse -->
+        <div class="w-full flex items-center justify-between pb-4 px-6 z-10">
+            <button onclick="navigateViewer(-1)" class="w-12 h-12 rounded-full bg-iosCard border border-iosBorder text-white flex items-center justify-center active:scale-90 transition">
+                <i class="fa-solid fa-chevron-left text-lg"></i>
+            </button>
+            <span id="viewerCounter" class="text-xs text-iosGray font-medium">1 / 1</span>
+            <button onclick="navigateViewer(1)" class="w-12 h-12 rounded-full bg-iosCard border border-iosBorder text-white flex items-center justify-center active:scale-90 transition">
+                <i class="fa-solid fa-chevron-right text-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DU DIAPORAMA ULTRA-ÉPURÉ -->
     <div id="slideshowOverlay" class="fixed inset-0 z-50 bg-black hidden flex items-center justify-center">
-        <!-- Croix discrète en haut à gauche pour quitter -->
         <button onclick="stopSlideshow()" class="absolute top-6 left-6 z-50 w-10 h-10 rounded-full bg-black/40 text-white/70 hover:text-white backdrop-blur-md flex items-center justify-center transition active:scale-90">
             <i class="fa-solid fa-xmark text-lg"></i>
         </button>
-
-        <!-- Conteneur média du diaporama -->
         <div id="slideshowMediaContainer" class="w-full h-full flex items-center justify-center p-0"></div>
     </div>
 
     <!-- SCRIPT APPLICATION -->
     <script>
-        // CONFIGURATION & VARIABLES GLOBALES
         let currentPin = "0507";
         let enteredPin = "";
         let db = null;
@@ -222,7 +245,10 @@
         let activeSlideshowQueue = [];
         let activeSlideshowIndex = 0;
 
-        // INITIALISATION INDEXEDDB
+        // Variables pour la visionneuse
+        let currentFolderMediaList = [];
+        let currentViewerIndex = 0;
+
         function initDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open("VaultMediaApp", 1);
@@ -244,7 +270,6 @@
             });
         }
 
-        // ACCÈS SÉCURISÉ PIN
         function enterPin(digit) {
             if (enteredPin.length < 4) {
                 enteredPin += digit;
@@ -283,7 +308,6 @@
             });
         }
 
-        // CHANGEMENT DE NAVIGATION (ONGLETS)
         function switchTab(tab) {
             document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
             document.querySelectorAll(".nav-item").forEach(el => {
@@ -311,7 +335,6 @@
             }
         }
 
-        // GESTION DES DOSSIERS
         function openCreateFolderModal() {
             const folderName = prompt("Nom du nouveau dossier :");
             if (folderName && folderName.trim() !== "") {
@@ -326,32 +349,59 @@
             }
         }
 
+        // CHARGEMENT DES DOSSIERS AVEC APERÇU MINIATURES
         function loadFolders() {
             const grid = document.getElementById("foldersGrid");
             grid.innerHTML = "";
-            const tx = db.transaction("folders", "readonly");
-            const store = tx.objectStore("folders");
-            const request = store.getAll();
+            const tx = db.transaction(["folders", "media"], "readonly");
+            const folderStore = tx.objectStore("folders");
+            const mediaStore = tx.objectStore("media");
 
-            request.onsuccess = () => {
-                const folders = request.result;
+            folderStore.getAll().onsuccess = (e) => {
+                const folders = e.target.result;
                 if (folders.length === 0) {
                     grid.innerHTML = `<div class="col-span-2 text-center py-12 text-iosGray text-sm">Aucun dossier. Appuyez sur + pour en créer un.</div>`;
                     return;
                 }
+
                 folders.forEach(folder => {
-                    const card = document.createElement("div");
-                    card.className = "bg-iosCard border border-iosBorder p-4 rounded-2xl flex flex-col justify-between h-32 active:scale-95 transition cursor-pointer";
-                    card.onclick = () => openFolder(folder.id, folder.name);
-                    card.innerHTML = `
-                        <div class="flex items-center justify-between">
-                            <i class="fa-solid fa-folder text-3xl text-iosBlue"></i>
-                        </div>
-                        <div>
-                            <div class="font-semibold text-sm truncate">${folder.name}</div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
+                    const index = mediaStore.index("folderId");
+                    index.getAll(folder.id).onsuccess = (mEv) => {
+                        const medias = mEv.target.result;
+                        const card = document.createElement("div");
+                        card.className = "bg-iosCard border border-iosBorder p-3 rounded-2xl flex flex-col justify-between h-40 active:scale-95 transition cursor-pointer overflow-hidden";
+                        card.onclick = () => openFolder(folder.id, folder.name);
+
+                        let previewHTML = "";
+                        if (medias.length > 0) {
+                            const previews = medias.slice(0, 4);
+                            previewHTML = `<div class="grid grid-cols-2 gap-1 w-full h-20 rounded-xl overflow-hidden bg-black/40 p-1 mb-2">`;
+                            previews.forEach(m => {
+                                const url = URL.createObjectURL(m.fileData);
+                                if (m.type === 'image') {
+                                    previewHTML += `<img src="${url}" class="w-full h-full object-cover rounded">`;
+                                } else {
+                                    previewHTML += `<div class="relative w-full h-full bg-black rounded overflow-hidden"><video src="${url}" class="w-full h-full object-cover"></video><div class="absolute inset-0 bg-black/30 flex items-center justify-center"><i class="fa-solid fa-play text-[8px] text-white"></i></div></div>`;
+                                }
+                            });
+                            previewHTML += `</div>`;
+                        } else {
+                            previewHTML = `
+                                <div class="w-full h-20 bg-black/30 rounded-xl flex items-center justify-center mb-2">
+                                    <i class="fa-solid fa-folder text-3xl text-iosBlue/70"></i>
+                                </div>
+                            `;
+                        }
+
+                        card.innerHTML = `
+                            ${previewHTML}
+                            <div class="mt-auto">
+                                <div class="font-semibold text-xs truncate">${folder.name}</div>
+                                <div class="text-[10px] text-iosGray">${medias.length} élément${medias.length > 1 ? 's' : ''}</div>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    };
                 });
             };
         }
@@ -388,7 +438,6 @@
             }
         }
 
-        // GESTION DES MÉDIAS (SANS POPUP DE SUPPRESSION POST-IMPORT)
         function handleMediaUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0 || !currentFolderId) return;
@@ -423,16 +472,17 @@
             const request = index.getAll(folderId);
 
             request.onsuccess = () => {
-                const items = request.result;
-                if (items.length === 0) {
+                currentFolderMediaList = request.result;
+                if (currentFolderMediaList.length === 0) {
                     grid.innerHTML = `<div class="col-span-3 text-center py-8 text-iosGray text-xs">Dossier vide.</div>`;
                     return;
                 }
-                items.forEach(item => {
+                currentFolderMediaList.forEach((item, index) => {
                     const url = URL.createObjectURL(item.fileData);
                     const el = document.createElement("div");
-                    el.className = "relative aspect-square bg-black rounded-xl overflow-hidden border border-iosBorder group";
-                    
+                    el.className = "relative aspect-square bg-black rounded-xl overflow-hidden border border-iosBorder group cursor-pointer active:scale-95 transition";
+                    el.onclick = () => openMediaViewer(index);
+
                     if (item.type === 'image') {
                         el.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
                     } else {
@@ -448,7 +498,70 @@
             };
         }
 
-        // SELECTION POUR DIAPORAMA
+        // VISIONNEUSE GRAND ÉCRAN
+        function openMediaViewer(index) {
+            currentViewerIndex = index;
+            document.getElementById("mediaViewerModal").classList.remove("hidden");
+            renderViewerMedia();
+        }
+
+        function closeMediaViewer() {
+            document.getElementById("mediaViewerModal").classList.add("hidden");
+            document.getElementById("viewerContent").innerHTML = "";
+        }
+
+        function renderViewerMedia() {
+            if (currentFolderMediaList.length === 0) {
+                closeMediaViewer();
+                return;
+            }
+
+            const item = currentFolderMediaList[currentViewerIndex];
+            const url = URL.createObjectURL(item.fileData);
+            const container = document.getElementById("viewerContent");
+            container.innerHTML = "";
+
+            if (item.type === 'image') {
+                const img = document.createElement("img");
+                img.src = url;
+                img.className = "max-w-full max-h-full object-contain rounded-lg";
+                container.appendChild(img);
+            } else {
+                const video = document.createElement("video");
+                video.src = url;
+                video.controls = true;
+                video.autoplay = true;
+                video.playsInline = true;
+                video.className = "max-w-full max-h-full object-contain rounded-lg";
+                container.appendChild(video);
+            }
+
+            document.getElementById("viewerCounter").innerText = `${currentViewerIndex + 1} / ${currentFolderMediaList.length}`;
+        }
+
+        function navigateViewer(direction) {
+            currentViewerIndex = (currentViewerIndex + direction + currentFolderMediaList.length) % currentFolderMediaList.length;
+            renderViewerMedia();
+        }
+
+        function deleteViewerMedia() {
+            if (confirm("Supprimer ce média ?")) {
+                const item = currentFolderMediaList[currentViewerIndex];
+                const tx = db.transaction("media", "readwrite");
+                tx.objectStore("media").delete(item.id);
+                tx.oncomplete = () => {
+                    loadFolderMedia(currentFolderId);
+                    if (currentFolderMediaList.length <= 1) {
+                        closeMediaViewer();
+                    } else {
+                        currentViewerIndex = currentViewerIndex % (currentFolderMediaList.length - 1);
+                        renderViewerMedia();
+                    }
+                };
+            }
+        }
+
+        // DIAPORAMA & RÉGLAGES
         function renderSlideshowFolderList() {
             const container = document.getElementById("slideshowFolderList");
             container.innerHTML = "";
@@ -478,7 +591,6 @@
             document.getElementById("selectAllBtn").innerText = allChecked ? "Tout sélectionner" : "Tout désélectionner";
         }
 
-        // ALGORITHME VRAI ALÉATOIRE (FISHER-YATES SHUFFLE)
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -487,7 +599,6 @@
             return array;
         }
 
-        // DIAPORAMA EN MODE ULTRA-ÉPURÉ
         function startSlideshow() {
             const selectedFolderIds = Array.from(document.querySelectorAll(".folder-checkbox:checked")).map(cb => cb.value);
             if (selectedFolderIds.length === 0) {
@@ -506,11 +617,9 @@
                     return;
                 }
 
-                // Application du vrai aléatoire
                 activeSlideshowQueue = shuffleArray(activeSlideshowQueue);
                 activeSlideshowIndex = 0;
 
-                // Affichage Overlay Plein Écran
                 document.getElementById("slideshowOverlay").classList.remove("hidden");
                 renderSlideshowStep();
             };
@@ -563,7 +672,6 @@
             document.getElementById("slideshowMediaContainer").innerHTML = "";
         }
 
-        // RÉGLAGES & STOCKAGE
         function updateStorageUsage() {
             if (navigator.storage && navigator.storage.estimate) {
                 navigator.storage.estimate().then(estimate => {
@@ -597,7 +705,6 @@
             }
         }
 
-        // DÉMARRAGE DE L'APPLICATION
         window.onload = () => {
             initDB();
         };
