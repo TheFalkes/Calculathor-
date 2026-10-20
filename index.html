@@ -115,9 +115,6 @@
             <h1 id="headerTitle" class="text-2xl font-black tracking-tight italic">InCalc</h1>
         </div>
         <div class="flex items-center space-x-3">
-            <button onclick="switchTab('browser')" class="text-inGray text-lg p-1 hover:text-white">
-                <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
             <span class="bg-gradient-to-r from-blue-500 to-fuchsia-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md tracking-wider">PRO</span>
         </div>
     </header>
@@ -144,7 +141,7 @@
 
                 <!-- ASTUCE SELECTION PAR APPUI LONG -->
                 <div id="longPressHint" class="text-center text-[11px] text-inGray bg-inCard/50 py-1.5 px-3 rounded-xl border border-inCardBorder/40">
-                    💡 <b>Appui long</b> sur une photo pour la sélectionner
+                    💡 <b>Appui long</b> sur une photo ou vidéo pour la sélectionner
                 </div>
 
                 <!-- Barre d'actions mode sélection -->
@@ -161,39 +158,7 @@
             </div>
         </section>
 
-        <!-- TAB 2: NAVIGATEUR INTÉGRÉ -->
-        <section id="tabBrowser" class="tab-content hidden h-full flex flex-col space-y-4">
-            <div class="flex items-center space-x-2 bg-inCard border border-inCardBorder p-2 rounded-2xl">
-                <button onclick="switchTab('folders')" class="text-inGray px-2"><i class="fa-solid fa-xmark text-lg"></i></button>
-                <input type="text" id="browserUrlInput" placeholder="Rechercher ou URL..." class="flex-1 bg-transparent text-sm outline-none text-white placeholder-inGray">
-                <button onclick="loadWebPage()" class="text-inGray px-2"><i class="fa-solid fa-rotate-right text-sm"></i></button>
-            </div>
-
-            <div class="grid grid-cols-4 gap-4 py-4 text-center">
-                <button onclick="openBookmark('https://www.google.com')" class="flex flex-col items-center space-y-1.5">
-                    <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center text-2xl shadow-lg"><i class="fa-brands fa-google text-blue-500"></i></div>
-                    <span class="text-xs font-semibold text-inGray">Google</span>
-                </button>
-                <button onclick="openBookmark('https://www.bing.com')" class="flex flex-col items-center space-y-1.5">
-                    <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center text-2xl shadow-lg"><i class="fa-solid fa-magnifying-glass text-cyan-600"></i></div>
-                    <span class="text-xs font-semibold text-inGray">Bing</span>
-                </button>
-                <button onclick="openBookmark('https://www.yahoo.com')" class="flex flex-col items-center space-y-1.5">
-                    <div class="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-2xl text-white shadow-lg"><i class="fa-brands fa-yahoo"></i></div>
-                    <span class="text-xs font-semibold text-inGray">Yahoo</span>
-                </button>
-                <button onclick="promptBookmark()" class="flex flex-col items-center space-y-1.5">
-                    <div class="w-14 h-14 border-2 border-dashed border-inCardBorder rounded-full flex items-center justify-center text-2xl text-inGray"><i class="fa-solid fa-plus"></i></div>
-                    <span class="text-xs font-semibold text-inGray">Ajouter</span>
-                </button>
-            </div>
-
-            <div class="flex-1 rounded-2xl overflow-hidden border border-inCardBorder bg-black">
-                <iframe id="browserFrame" src="https://www.bing.com" class="w-full h-full border-none"></iframe>
-            </div>
-        </section>
-
-        <!-- TAB 3: DIAPORAMA ALÉATOIRE -->
+        <!-- TAB 2: DIAPORAMA ALÉATOIRE -->
         <section id="tabSlideshow" class="tab-content hidden space-y-4">
             <div class="bg-inCard p-4 rounded-2xl border border-inCardBorder space-y-4">
                 <div class="flex items-center justify-between">
@@ -205,7 +170,7 @@
 
                 <div class="pt-2 border-t border-inCardBorder space-y-3">
                     <div class="flex items-center justify-between">
-                        <span class="text-sm text-inGray">Durée par image</span>
+                        <span class="text-sm text-inGray">Durée des photos</span>
                         <select id="slideshowTimerSelect" class="bg-inBg border border-inCardBorder rounded-xl px-3 py-1.5 text-sm text-inPurple font-bold outline-none">
                             <option value="2">2 s</option>
                             <option value="3" selected>3 s</option>
@@ -213,16 +178,37 @@
                             <option value="10">10 s</option>
                         </select>
                     </div>
+
+                    <!-- OPTION LECTURE VIDÉO ENTIÈRE OU TEMPS PHOTO -->
+                    <div class="space-y-1.5 pt-1">
+                        <label class="text-xs font-bold text-inGray block">Mode de lecture des vidéos :</label>
+                        <div class="grid grid-cols-1 gap-2">
+                            <label class="flex items-center justify-between p-2.5 bg-inBg rounded-xl border border-inCardBorder text-xs cursor-pointer">
+                                <div>
+                                    <div class="font-bold text-white">Lecture entière</div>
+                                    <div class="text-[10px] text-inGray">Joue la vidéo jusqu'à la fin</div>
+                                </div>
+                                <input type="radio" name="videoMode" value="full" checked class="w-4 h-4 accent-inPurple">
+                            </label>
+                            <label class="flex items-center justify-between p-2.5 bg-inBg rounded-xl border border-inCardBorder text-xs cursor-pointer">
+                                <div>
+                                    <div class="font-bold text-white">Même durée que les photos</div>
+                                    <div class="text-[10px] text-inGray">Coupe la vidéo selon le minuteur</div>
+                                </div>
+                                <input type="radio" name="videoMode" value="timer" class="w-4 h-4 accent-inPurple">
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
-                <button onclick="startSlideshow()" class="w-full py-3.5 bg-inPurple font-bold text-white rounded-xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-2">
+                <button onclick="startSlideshow()" class="w-full py-3.5 bg-inPurple font-bold text-white rounded-xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-2 mt-2">
                     <i class="fa-solid fa-play text-sm"></i>
                     <span>Lancer le Diaporama Aléatoire</span>
                 </button>
             </div>
         </section>
 
-        <!-- TAB 4: RÉGLAGES -->
+        <!-- TAB 3: RÉGLAGES -->
         <section id="tabSettings" class="tab-content hidden space-y-5">
             <div class="bg-gradient-to-br from-inCard to-purple-950/40 p-5 rounded-2xl border border-inCardBorder space-y-3">
                 <div class="flex items-center space-x-2">
@@ -291,14 +277,10 @@
     </main>
 
     <!-- BARRE DE NAVIGATION INFÉRIEURE -->
-    <nav class="shrink-0 bg-inBg/95 backdrop-blur-md border-t border-inCardBorder/60 px-5 pt-2.5 flex justify-around items-center z-20">
+    <nav class="shrink-0 bg-inBg/95 backdrop-blur-md border-t border-inCardBorder/60 px-8 pt-2.5 flex justify-around items-center z-20">
         <button onclick="switchTab('folders')" id="nav-folders" class="nav-item flex flex-col items-center space-y-1 text-inPurple">
             <i class="fa-solid fa-folder text-lg"></i>
             <span class="text-[10px] font-bold">Albums</span>
-        </button>
-        <button onclick="switchTab('browser')" id="nav-browser" class="nav-item flex flex-col items-center space-y-1 text-inGray">
-            <i class="fa-solid fa-compass text-lg"></i>
-            <span class="text-[10px] font-bold">Web</span>
         </button>
         <button onclick="switchTab('slideshow')" id="nav-slideshow" class="nav-item flex flex-col items-center space-y-1 text-inGray">
             <i class="fa-solid fa-shuffle text-lg"></i>
@@ -360,12 +342,70 @@
         let isSelectMode = false;
         let selectedMediaIds = new Set();
         let lastTapTime = 0;
+        let videoThumbnailCache = new Map();
 
         // DÉTECTION EXTENSION FORMATS VIDÉOS (APPLE MOV, M4V, MP4...)
         function isVideoFile(fileName, mimeType) {
             if (mimeType && mimeType.startsWith('video/')) return true;
             if (!fileName) return false;
             return /\.(mp4|mov|m4v|webm|m4a|3gp|avi|mkv)$/i.test(fileName);
+        }
+
+        // GÉNÉRATEUR AUTOMATIQUE DE VIGNETTES VIDÉO DYNAMIQUES AVEC CANVAS
+        function generateVideoThumbnail(blob) {
+            return new Promise((resolve) => {
+                const url = URL.createObjectURL(blob);
+                const video = document.createElement('video');
+                video.src = url;
+                video.muted = true;
+                video.playsInline = true;
+                video.setAttribute('webkit-playsinline', 'true');
+                video.currentTime = 0.5;
+
+                const cleanup = () => {
+                    URL.revokeObjectURL(url);
+                    video.remove();
+                };
+
+                video.onloadeddata = () => {
+                    video.currentTime = Math.min(1.0, video.duration / 2 || 0.5);
+                };
+
+                video.onseeked = () => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 300;
+                        canvas.height = 300;
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Crop & Center Fill
+                        const scale = Math.max(canvas.width / video.videoWidth, canvas.height / video.videoHeight);
+                        const x = (canvas.width / 2) - (video.videoWidth / 2) * scale;
+                        const y = (canvas.height / 2) - (video.videoHeight / 2) * scale;
+                        
+                        ctx.drawImage(video, x, y, video.videoWidth * scale, video.videoHeight * scale);
+                        const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        cleanup();
+                        resolve(thumbUrl);
+                    } catch (e) {
+                        cleanup();
+                        resolve(null);
+                    }
+                };
+
+                video.onerror = () => {
+                    cleanup();
+                    resolve(null);
+                };
+
+                // Safety timeout for iOS Safari
+                setTimeout(() => {
+                    cleanup();
+                    resolve(null);
+                }, 2500);
+
+                video.load();
+            });
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -465,11 +505,6 @@
                 document.getElementById("nav-folders").className = "nav-item flex flex-col items-center space-y-1 text-inPurple";
                 document.getElementById("headerTitle").innerText = "InCalc";
                 document.getElementById("fabContainer").classList.remove("hidden");
-            } else if (tab === 'browser') {
-                document.getElementById("tabBrowser").classList.remove("hidden");
-                document.getElementById("nav-browser").className = "nav-item flex flex-col items-center space-y-1 text-inPurple";
-                document.getElementById("headerTitle").innerText = "Navigateur";
-                document.getElementById("fabContainer").classList.add("hidden");
             } else if (tab === 'slideshow') {
                 document.getElementById("tabSlideshow").classList.remove("hidden");
                 document.getElementById("nav-slideshow").className = "nav-item flex flex-col items-center space-y-1 text-inPurple";
@@ -518,7 +553,7 @@
                     return;
                 }
                 folders.forEach(folder => {
-                    tx.objectStore("media").index("folderId").getAll(folder.id).onsuccess = (mEv) => {
+                    tx.objectStore("media").index("folderId").getAll(folder.id).onsuccess = async (mEv) => {
                         const medias = mEv.target.result;
                         const card = document.createElement("div");
                         card.className = "bg-inCard border border-inCardBorder p-3 rounded-2xl flex flex-col justify-between h-48 active:scale-95 transition cursor-pointer overflow-hidden shadow-xl";
@@ -528,13 +563,27 @@
                         if (medias.length > 0) {
                             const first = medias[0];
                             const isVid = isVideoFile(first.name, first.type);
-                            const url = URL.createObjectURL(first.fileData);
+                            
                             if (isVid) {
-                                previewHTML = `<div class="w-full h-28 rounded-xl overflow-hidden bg-black/60 mb-2 relative flex items-center justify-center border border-inCardBorder/40">
-                                    <video src="${url}" playsinline webkit-playsinline muted preload="metadata" class="w-full h-full object-cover"></video>
-                                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center"><i class="fa-solid fa-play text-white text-base"></i></div>
-                                </div>`;
+                                let thumb = videoThumbnailCache.get(first.id);
+                                if (!thumb) {
+                                    thumb = await generateVideoThumbnail(first.fileData);
+                                    if (thumb) videoThumbnailCache.set(first.id, thumb);
+                                }
+
+                                if (thumb) {
+                                    previewHTML = `<div class="w-full h-28 rounded-xl overflow-hidden bg-black/60 mb-2 relative border border-inCardBorder/40">
+                                        <img src="${thumb}" class="w-full h-full object-cover">
+                                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center"><i class="fa-solid fa-play text-white text-base drop-shadow-md"></i></div>
+                                    </div>`;
+                                } else {
+                                    previewHTML = `<div class="w-full h-28 rounded-xl overflow-hidden bg-purple-950/40 border border-inCardBorder/40 mb-2 flex flex-col items-center justify-center text-inPurple">
+                                        <i class="fa-solid fa-film text-3xl mb-1"></i>
+                                        <span class="text-[9px] text-inGray font-bold truncate px-2 max-w-full">${first.name}</span>
+                                    </div>`;
+                                }
                             } else {
+                                const url = URL.createObjectURL(first.fileData);
                                 previewHTML = `<div class="w-full h-28 rounded-xl overflow-hidden bg-black/40 mb-2 relative"><img src="${url}" class="w-full h-full object-cover"></div>`;
                             }
                         } else {
@@ -574,6 +623,25 @@
             document.getElementById("folderDetailView").classList.add("hidden");
             document.getElementById("foldersGrid").classList.remove("hidden");
             loadFolders();
+        }
+
+        function deleteCurrentFolder() {
+            if (!currentFolderId) return;
+            if (confirm("Voulez-vous vraiment supprimer cet album et tout son contenu ?")) {
+                const tx = db.transaction(["folders", "media"], "readwrite");
+                tx.objectStore("folders").delete(currentFolderId);
+                
+                // Supprimer tous les médias associés
+                const mediaStore = tx.objectStore("media");
+                const index = mediaStore.index("folderId");
+                index.getAllKeys(currentFolderId).onsuccess = (e) => {
+                    e.target.result.forEach(key => mediaStore.delete(key));
+                };
+
+                tx.oncomplete = () => {
+                    closeFolderDetail();
+                };
+            }
         }
 
         function enterSelectModeWithMedia(initialId) {
@@ -704,27 +772,42 @@
                     return;
                 }
 
-                currentFolderMediaList.forEach((item, index) => {
-                    const url = URL.createObjectURL(item.fileData);
+                currentFolderMediaList.forEach(async (item, index) => {
                     const el = document.createElement("div");
                     el.className = "relative aspect-square bg-black rounded-xl overflow-hidden border border-inCardBorder cursor-pointer shadow-md select-none touch-none";
 
                     const isVid = item.type === 'video' || isVideoFile(item.name, item.fileData.type);
 
                     if (isVid) {
-                        el.innerHTML = `
-                            <video src="${url}" playsinline webkit-playsinline muted preload="metadata" class="w-full h-full object-cover pointer-events-none"></video>
-                            <div class="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
-                                <div class="w-7 h-7 rounded-full bg-black/60 flex items-center justify-center border border-white/30">
-                                    <i class="fa-solid fa-play text-white text-[10px] ml-0.5"></i>
+                        let thumb = videoThumbnailCache.get(item.id);
+                        if (!thumb) {
+                            thumb = await generateVideoThumbnail(item.fileData);
+                            if (thumb) videoThumbnailCache.set(item.id, thumb);
+                        }
+
+                        if (thumb) {
+                            el.innerHTML = `
+                                <img src="${thumb}" class="w-full h-full object-cover pointer-events-none">
+                                <div class="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
+                                    <div class="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center border border-white/30 backdrop-blur-xs">
+                                        <i class="fa-solid fa-play text-white text-xs ml-0.5"></i>
+                                    </div>
                                 </div>
-                            </div>
-                        `;
+                            `;
+                        } else {
+                            el.innerHTML = `
+                                <div class="w-full h-full bg-purple-950/30 flex flex-col items-center justify-center p-2 text-center">
+                                    <i class="fa-solid fa-video text-inPurple text-2xl mb-1"></i>
+                                    <span class="text-[9px] text-inGray font-medium truncate max-w-full">${item.name}</span>
+                                </div>
+                            `;
+                        }
                     } else {
+                        const url = URL.createObjectURL(item.fileData);
                         el.innerHTML = `<img src="${url}" class="w-full h-full object-cover pointer-events-none">`;
                     }
 
-                    // TIMERS APPUI LONG (~500ms) ET TAP SIMPLE
+                    // TIMERS APPUI LONG (~450ms) ET TAP SIMPLE
                     let pressTimer = null;
                     let isLongPress = false;
 
@@ -771,22 +854,6 @@
                     grid.appendChild(el);
                 });
             };
-        }
-
-        function loadWebPage() {
-            let url = document.getElementById("browserUrlInput").value.trim();
-            if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
-            document.getElementById("browserFrame").src = url;
-        }
-
-        function openBookmark(url) {
-            document.getElementById("browserUrlInput").value = url;
-            document.getElementById("browserFrame").src = url;
-        }
-
-        function promptBookmark() {
-            const url = prompt("Adresse du site Web :");
-            if (url) openBookmark(url);
         }
 
         function openMoveModalSingle() {
@@ -956,6 +1023,7 @@
             const currentMedia = activeSlideshowQueue[activeSlideshowIndex];
             const url = URL.createObjectURL(currentMedia.fileData);
             const timerSec = parseInt(document.getElementById("slideshowTimerSelect").value) || 3;
+            const videoMode = document.querySelector('input[name="videoMode"]:checked')?.value || 'full';
             const isVid = currentMedia.type === 'video' || isVideoFile(currentMedia.name, currentMedia.fileData.type);
 
             if (isVid) {
@@ -968,7 +1036,15 @@
                 video.className = "max-w-full max-h-full object-contain";
                 container.appendChild(video);
 
-                slideshowInterval = setTimeout(nextSlide, timerSec * 1000);
+                if (videoMode === 'full') {
+                    // Passer à la suite dès que la vidéo est terminée
+                    video.onended = () => nextSlide();
+                    // Sécurité au cas où la vidéo ne démarrerait pas
+                    video.onerror = () => nextSlide();
+                } else {
+                    // Même durée que le minuteur des photos
+                    slideshowInterval = setTimeout(nextSlide, timerSec * 1000);
+                }
             } else {
                 const img = document.createElement("img");
                 img.src = url;
@@ -1007,6 +1083,98 @@
             } else if (newPin !== null) {
                 alert("Code invalide. Le PIN doit comporter 4 chiffres.");
             }
+        }
+
+        function exportAllToZIP() {
+            const zip = new JSZip();
+            const tx = db.transaction(["folders", "media"], "readonly");
+            
+            tx.objectStore("folders").getAll().onsuccess = (fEv) => {
+                const folders = fEv.target.result;
+                const folderMap = new Map();
+                folders.forEach(f => folderMap.set(f.id, f.name));
+
+                tx.objectStore("media").getAll().onsuccess = (mEv) => {
+                    const medias = mEv.target.result;
+                    if (medias.length === 0) {
+                        alert("Aucun média à exporter.");
+                        return;
+                    }
+
+                    medias.forEach((m) => {
+                        const folderName = folderMap.get(m.folderId) || "Album";
+                        zip.folder(folderName).file(m.name, m.fileData);
+                    });
+
+                    zip.generateAsync({ type: "blob" }).then((content) => {
+                        const a = document.createElement("a");
+                        a.href = URL.createObjectURL(content);
+                        a.download = `InCalc_Sauvegarde_${new Date().toISOString().slice(0,10)}.zip`;
+                        a.click();
+                    });
+                };
+            };
+        }
+
+        function importZIPFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            JSZip.loadAsync(file).then((zip) => {
+                const promises = [];
+                zip.forEach((relativePath, zipEntry) => {
+                    if (!zipEntry.dir) {
+                        const pathParts = relativePath.split('/');
+                        const folderName = pathParts.length > 1 ? pathParts[0] : "Importé";
+                        const fileName = pathParts[pathParts.length - 1];
+
+                        const p = zipEntry.async("blob").then((blob) => {
+                            return { folderName, fileName, blob };
+                        });
+                        promises.push(p);
+                    }
+                });
+
+                Promise.all(promises).then((importedItems) => {
+                    const tx = db.transaction(["folders", "media"], "readwrite");
+                    const folderStore = tx.objectStore("folders");
+                    const mediaStore = tx.objectStore("media");
+
+                    const folderNameToId = new Map();
+
+                    folderStore.getAll().onsuccess = (e) => {
+                        const existingFolders = e.target.result;
+                        existingFolders.forEach(f => folderNameToId.set(f.name, f.id));
+
+                        importedItems.forEach((item) => {
+                            let fId = folderNameToId.get(item.folderName);
+                            if (!fId) {
+                                fId = 'folder_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                                folderStore.add({ id: fId, name: item.folderName, createdAt: new Date() });
+                                folderNameToId.set(item.folderName, fId);
+                            }
+
+                            const isVid = isVideoFile(item.fileName, item.blob.type);
+                            mediaStore.add({
+                                id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                                folderId: fId,
+                                name: item.fileName,
+                                type: isVid ? 'video' : 'image',
+                                fileData: item.blob,
+                                createdAt: new Date()
+                            });
+                        });
+
+                        tx.oncomplete = () => {
+                            alert("Importation terminée avec succès !");
+                            switchTab("folders");
+                            loadFolders();
+                        };
+                    };
+                });
+            }).catch(() => {
+                alert("Erreur lors de la lecture du fichier ZIP.");
+            });
         }
 
         function clearAllData() {
