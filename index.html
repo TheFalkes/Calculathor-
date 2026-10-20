@@ -2,10 +2,10 @@
 <html lang="fr" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Media Vault iOS</title>
-    <!-- Tailwind CSS CDN -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Vault iOS - Medias & Diaporama</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -14,1062 +14,592 @@
                     colors: {
                         iosBg: '#000000',
                         iosCard: '#1c1c1e',
-                        iosCardSecondary: '#2c2c2e',
+                        iosCardHover: '#2c2c2e',
                         iosBlue: '#0a84ff',
-                        iosGreen: '#30d158',
                         iosRed: '#ff453a',
-                        iosOrange: '#ff9f0a',
                         iosGray: '#8e8e93',
-                        iosTextSecondary: '#ebebf599'
-                    },
-                    fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', 'San Francisco', 'Inter', 'Helvetica Neue', 'sans-serif']
+                        iosBorder: '#38383a'
                     }
                 }
             }
         }
     </script>
-    <!-- FontAwesome icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            background-color: #000000;
-            color: #ffffff;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
-            overflow-x: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000000;
+            color: #ffffff;
         }
-
-        .glass-nav {
-            background: rgba(28, 28, 30, 0.8);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-top: 0.5px solid rgba(255, 255, 255, 0.12);
+        .glass {
+            background: rgba(28, 28, 30, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
-
-        .glass-header {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .ios-btn-press:active {
-            transform: scale(0.96);
-            opacity: 0.8;
-            transition: transform 0.1s ease, opacity 0.1s ease;
-        }
-
-        .no-scrollbar::-webkit-scrollbar {
+        .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
-        .no-scrollbar {
+        .hide-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-
-        .fade-in {
-            animation: fadeIn 0.2s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.98); }
-            to { opacity: 1; transform: scale(1); }
-        }
     </style>
 </head>
-<body class="bg-iosBg text-white antialiased min-h-screen flex flex-col justify-between select-none">
+<body class="bg-black text-white antialiased min-h-screen flex flex-col justify-between overflow-x-hidden">
 
-    <!-- SECURITY LOCK OVERLAY (PIN CODE "0507") -->
-    <div id="security-lock-screen" class="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-6">
-        <div class="text-center space-y-4 max-w-xs w-full">
-            <div class="w-20 h-20 bg-iosCardSecondary/80 rounded-full flex items-center justify-center mx-auto text-3xl text-iosBlue border border-white/10 shadow-2xl">
-                <i class="fa-solid fa-lock" id="lock-icon"></i>
+    <!-- ÉCRAN DE VERROUILLAGE (CODE PIN 0507) -->
+    <div id="lockScreen" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 transition-all duration-300">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-iosCard border border-iosBorder rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl text-iosBlue shadow-lg">
+                <i class="fa-solid fa-lock"></i>
             </div>
-            <h2 class="text-xl font-bold tracking-tight text-white">Code PIN requis</h2>
-            <p class="text-xs text-iosGray">Saisissez votre code PIN à 4 chiffres pour accéder à vos médias.</p>
+            <h1 class="text-xl font-semibold">Coffre-fort Sécurisé</h1>
+            <p class="text-sm text-iosGray mt-1">Saisissez votre code PIN</p>
+        </div>
 
-            <!-- PIN Display Dots -->
-            <div class="flex justify-center gap-4 py-2" id="pin-dots">
-                <div class="w-3.5 h-3.5 rounded-full border border-white/40 bg-transparent"></div>
-                <div class="w-3.5 h-3.5 rounded-full border border-white/40 bg-transparent"></div>
-                <div class="w-3.5 h-3.5 rounded-full border border-white/40 bg-transparent"></div>
-                <div class="w-3.5 h-3.5 rounded-full border border-white/40 bg-transparent"></div>
-            </div>
+        <div id="pinDots" class="flex space-x-4 mb-10">
+            <div class="w-3.5 h-3.5 rounded-full border border-iosGray transition-all"></div>
+            <div class="w-3.5 h-3.5 rounded-full border border-iosGray transition-all"></div>
+            <div class="w-3.5 h-3.5 rounded-full border border-iosGray transition-all"></div>
+            <div class="w-3.5 h-3.5 rounded-full border border-iosGray transition-all"></div>
+        </div>
 
-            <!-- Numeric Numpad -->
-            <div class="grid grid-cols-3 gap-4 pt-4 px-2">
-                <button onclick="app.enterPin('1')" class="w-16 h-16 rounded-full bg-iosCardSecondary text-xl font-semibold flex items-center justify-center mx-auto ios-btn-press">1</button>
-                <button onclick="app.enterPin('2')" class="w-16 h-16 rounded-full bg-iosCardSecondary text-xl font-semibold flex items-center justify-center mx-auto ios-btn-press">2</button>
-                <button onclick="app.enterPin('3')" class="w-16 h-16 rounded-full bg-iosCardSecondary text-xl font-semibold flex items-center justify-center mx-auto ios-btn-press">3</button>
-                <button onclick="app.enterPin('4')" class="w-16 h-16 rounded-full bg-iosCardSecondary text-xl font-semibold flex items-center justify-center mx-auto ios-btn-press">4</button>
-                <button onclick="app.enterPin('5')" class="w-16 h-16 rounded-full bg-iosCardSecondary text-xl font-semibold flex items-center justify-center mx-auto ios-btn-press">5</button>
-                <button onclick="app.enterPin('6')" class="w-16 h-16 rounded-full bg-iosCardSecondary text-xl font-semibold flex items-center justify-center mx-auto ios-btn-press">6</button>
-                <button onclick="app.enterPin('7')" class="w-16 h-16 rounded-full bg-iosCardSecondary text-xl font-semibold flex items-center justify-center mx-auto ios-btn-press">7</button>
-                <button onclick="app.enterPin('8')" class="w-16 h-16 rounded-full bg-iosCardSecondary text-xl font-semibold flex items-center justify-center mx-auto ios-btn-press">8</button>
-                <button onclick="app.enterPin('9')" class="w-16 h-16 rounded-full bg-iosCardSecondary text-xl font-semibold flex items-center justify-center mx-auto ios-btn-press">9</button>
-                <div></div>
-                <button onclick="app.enterPin('0')" class="w-16 h-16 rounded-full bg-iosCardSecondary text-xl font-semibold flex items-center justify-center mx-auto ios-btn-press">0</button>
-                <button onclick="app.clearPin()" class="w-16 h-16 rounded-full bg-transparent text-xs text-iosGray flex items-center justify-center mx-auto ios-btn-press">
-                    <i class="fa-solid fa-delete-left text-lg"></i>
-                </button>
-            </div>
+        <!-- Clavier Numérique Style iOS -->
+        <div class="grid grid-cols-3 gap-6 w-full max-w-xs">
+            <button onclick="enterPin('1')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">1</button>
+            <button onclick="enterPin('2')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">2</button>
+            <button onclick="enterPin('3')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">3</button>
+            <button onclick="enterPin('4')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">4</button>
+            <button onclick="enterPin('5')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">5</button>
+            <button onclick="enterPin('6')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">6</button>
+            <button onclick="enterPin('7')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">7</button>
+            <button onclick="enterPin('8')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">8</button>
+            <button onclick="enterPin('9')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">9</button>
+            <div class="w-16 h-16"></div>
+            <button onclick="enterPin('0')" class="w-16 h-16 rounded-full bg-iosCard text-2xl font-light mx-auto active:bg-iosGray/40 transition">0</button>
+            <button onclick="clearPin()" class="w-16 h-16 rounded-full text-xs text-iosGray flex items-center justify-center mx-auto active:text-white transition"><i class="fa-solid fa-delete-left text-xl"></i></button>
         </div>
     </div>
 
-    <!-- Header Navbar -->
-    <header class="sticky top-0 z-30 glass-header px-4 py-3 flex items-center justify-between min-h-[54px]">
-        <div id="header-back-btn" class="hidden cursor-pointer text-iosBlue flex items-center text-base font-normal ios-btn-press" onclick="app.goBack()">
-            <i class="fa-solid fa-chevron-left mr-1 text-lg"></i> Dossiers
-        </div>
-        <h1 id="header-title" class="text-base font-semibold tracking-tight text-center flex-1">Mes Dossiers</h1>
-        <div id="header-action-btn" class="w-12 text-right">
-            <button onclick="app.openCreateFolderModal()" class="text-iosBlue text-xl ios-btn-press focus:outline-none">
-                <i class="fa-solid fa-folder-plus"></i>
-            </button>
-        </div>
+    <!-- EN-TÊTE PRINCIPALE -->
+    <header class="sticky top-0 z-20 glass border-b border-iosBorder/40 px-5 py-4 flex items-center justify-between">
+        <h1 id="headerTitle" class="text-2xl font-bold tracking-tight">Dossiers</h1>
+        <button id="addFolderBtn" onclick="openCreateFolderModal()" class="w-9 h-9 rounded-full bg-iosBlue/20 text-iosBlue flex items-center justify-center active:scale-95 transition">
+            <i class="fa-solid fa-folder-plus text-base"></i>
+        </button>
     </header>
 
-    <!-- Main View Container -->
-    <main class="flex-1 pb-24 pt-2 px-4 max-w-2xl mx-auto w-full">
+    <!-- CONTENU PRINCIPAL (ONGLETS) -->
+    <main class="flex-1 px-4 pt-4 pb-24 overflow-y-auto hide-scrollbar">
 
-        <!-- TAB 1: DOSSIERS & CONTENU DU DOSSIER -->
-        <section id="tab-folders" class="space-y-4 fade-in">
-            <!-- Global Search & Filter Bar -->
-            <div id="search-filter-bar" class="space-y-2">
-                <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-iosGray text-xs"></i>
-                    <input type="text" id="global-search-input" onkeyup="app.filterCurrentView()" placeholder="Rechercher dans les dossiers..." class="w-full bg-iosCardSecondary border border-white/5 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-iosGray focus:outline-none focus:border-iosBlue">
-                </div>
-                <!-- Filter Pills -->
-                <div class="flex gap-2 text-xs pt-1">
-                    <button onclick="app.setFilterType('all')" id="filter-btn-all" class="px-3.5 py-1.5 rounded-full bg-iosBlue text-white font-medium ios-btn-press">Tout</button>
-                    <button onclick="app.setFilterType('image')" id="filter-btn-image" class="px-3.5 py-1.5 rounded-full bg-iosCardSecondary text-iosGray font-medium ios-btn-press">Photos</button>
-                    <button onclick="app.setFilterType('video')" id="filter-btn-video" class="px-3.5 py-1.5 rounded-full bg-iosCardSecondary text-iosGray font-medium ios-btn-press">Vidéos</button>
-                </div>
-            </div>
+        <!-- TAB 1: DOSSIERS ET MÉDIAS -->
+        <section id="tabFolders" class="tab-content space-y-4">
+            <!-- Grille des dossiers -->
+            <div id="foldersGrid" class="grid grid-cols-2 gap-3"></div>
 
-            <!-- Folders Grid -->
-            <div id="folders-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-                <!-- Populated dynamically -->
-            </div>
-
-            <!-- Folders Empty State -->
-            <div id="folders-empty" class="hidden flex-col items-center justify-center py-20 text-center text-iosGray">
-                <i class="fa-regular fa-folder-open text-6xl mb-3 opacity-30"></i>
-                <p class="text-base font-medium">Aucun dossier disponible</p>
-                <p class="text-xs text-iosTextSecondary mt-1">Appuyez sur l'icône en haut à droite pour créer votre premier dossier.</p>
-            </div>
-
-            <!-- Folder Detail View (Hidden by default) -->
-            <div id="folder-detail-view" class="hidden space-y-4">
-                <div class="flex items-center justify-between bg-iosCard p-3 rounded-2xl border border-white/5 shadow-md">
-                    <div>
-                        <span id="folder-detail-count" class="text-xs text-iosGray block">0 élément(s)</span>
-                        <span id="folder-detail-size" class="text-xs text-iosGray">0.0 MB</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <label class="bg-iosBlue hover:bg-blue-600 text-white text-xs px-3.5 py-2 rounded-xl font-semibold cursor-pointer flex items-center gap-1.5 ios-btn-press shadow-md">
-                            <i class="fa-solid fa-plus text-sm"></i>
-                            <span>Importer</span>
-                            <input type="file" id="media-input" multiple accept="image/*,video/*" class="hidden" onchange="app.handleMediaUpload(event)">
-                        </label>
-                        <button onclick="app.openEditFolderModal()" class="bg-iosCardSecondary text-iosGray p-2 rounded-xl text-xs ios-btn-press">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button onclick="app.confirmDeleteFolder()" class="bg-iosCardSecondary text-iosRed p-2 rounded-xl text-xs ios-btn-press">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Media Items Grid -->
-                <div id="media-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    <!-- Populated dynamically -->
-                </div>
-
-                <!-- Media Empty State -->
-                <div id="media-empty" class="hidden flex-col items-center justify-center py-16 text-center text-iosGray">
-                    <i class="fa-regular fa-images text-5xl mb-3 opacity-30"></i>
-                    <p class="text-sm font-medium">Ce dossier est vide</p>
-                    <p class="text-xs text-iosTextSecondary mt-1">Ajoutez des photos ou vidéos depuis la galerie de votre téléphone.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 2: DIAPORAMA ALEATOIRE -->
-        <section id="tab-random" class="hidden space-y-5 fade-in">
-            <div class="bg-iosCard p-4 rounded-2xl border border-white/5 space-y-4">
-                <h2 class="text-xs font-semibold text-iosGray uppercase tracking-wider">Configuration du Tirage</h2>
-                
-                <!-- Media Type Selection -->
-                <div class="flex justify-between items-center text-sm border-b border-white/5 pb-3">
-                    <span class="font-medium text-white">Filtre du contenu</span>
-                    <select id="random-media-type" class="bg-iosCardSecondary text-iosBlue text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none border border-white/10">
-                        <option value="both" selected>Photos & Vidéos</option>
-                        <option value="image">Photos Uniquement</option>
-                        <option value="video">Vidéos Uniquement</option>
-                    </select>
-                </div>
-
-                <!-- Folder Selection Grid -->
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-medium text-white">Dossiers inclus</span>
-                        <button id="toggle-select-all-btn" onclick="app.toggleSelectAllFolders()" class="text-iosBlue text-xs font-medium ios-btn-press">
-                            Tout désélectionner
-                        </button>
-                    </div>
-                    <div id="random-folder-selector" class="space-y-2 max-h-56 overflow-y-auto no-scrollbar pr-1">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Launch Slideshow Button -->
-            <button onclick="app.startSlideshow()" class="w-full bg-iosBlue hover:bg-blue-600 text-white font-semibold py-3.5 rounded-xl shadow-lg flex items-center justify-center gap-2 ios-btn-press text-sm">
-                <i class="fa-solid fa-play"></i> Lancer le Diaporama Aléatoire
-            </button>
-        </section>
-
-        <!-- TAB 3: PARAMETRES -->
-        <section id="tab-settings" class="hidden space-y-5 fade-in">
-            <!-- Timer Slider -->
-            <div class="bg-iosCard rounded-2xl p-4 border border-white/5 space-y-3">
-                <div class="flex justify-between items-center">
-                    <label class="text-sm font-medium text-white flex items-center gap-2">
-                        <i class="fa-solid fa-clock text-iosBlue"></i> Durée d'affichage photo
-                    </label>
-                    <span id="timer-val-display" class="text-xs font-semibold text-iosBlue bg-iosBlue/10 px-2.5 py-1 rounded-md">5 sec</span>
-                </div>
-                <input type="range" id="timer-range-input" min="2" max="30" value="5" step="1" oninput="app.updateTimerSetting(this.value)" class="w-full accent-iosBlue bg-iosCardSecondary rounded-lg h-1.5 cursor-pointer">
-                <p class="text-[11px] text-iosGray">Temps avant de passer automatiquement à la photo suivante.</p>
-            </div>
-
-            <!-- Video Playback Options -->
-            <div class="bg-iosCard rounded-2xl p-4 border border-white/5 space-y-3">
-                <h3 class="text-xs font-semibold text-iosGray uppercase tracking-wider">Comportement des Vidéos</h3>
-                <div class="flex items-center justify-between py-1">
-                    <span class="text-sm font-medium text-white">Lire la vidéo jusqu'à la fin</span>
-                    <input type="checkbox" id="setting-play-full-video" onchange="app.saveSettings()" class="w-5 h-5 text-iosBlue rounded bg-iosCardSecondary border-white/10" checked>
-                </div>
-                <p class="text-[11px] text-iosGray">Attend la fin de la vidéo au lieu de couper à la minuterie.</p>
-
-                <div class="flex items-center justify-between py-1 border-t border-white/5 pt-3">
-                    <span class="text-sm font-medium text-white">Son des vidéos activé par défaut</span>
-                    <input type="checkbox" id="setting-unmute-video" onchange="app.saveSettings()" class="w-5 h-5 text-iosBlue rounded bg-iosCardSecondary border-white/10">
-                </div>
-            </div>
-
-            <!-- Protection Code PIN -->
-            <div class="bg-iosCard rounded-2xl p-4 border border-white/5 space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium text-white flex items-center gap-2">
-                        <i class="fa-solid fa-shield-halved text-iosGreen"></i> Verrouillage par Code PIN
-                    </span>
-                    <button onclick="app.togglePinProtection()" id="pin-status-btn" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-iosGreen/20 text-iosGreen">
-                        Activé (0507)
+            <!-- Vue Intérieur d'un Dossier (Caché par défaut) -->
+            <div id="folderDetailView" class="hidden space-y-4">
+                <div class="flex items-center justify-between bg-iosCard/60 p-3 rounded-2xl border border-iosBorder">
+                    <button onclick="closeFolderDetail()" class="text-iosBlue flex items-center space-x-1 font-medium text-sm">
+                        <i class="fa-solid fa-chevron-left"></i>
+                        <span>Retour</span>
+                    </button>
+                    <h2 id="currentFolderName" class="font-semibold text-base truncate max-w-[160px]">Nom dossier</h2>
+                    <button onclick="deleteCurrentFolder()" class="text-iosRed text-sm px-2 py-1 rounded-lg hover:bg-iosRed/10">
+                        <i class="fa-regular fa-trash-can"></i>
                     </button>
                 </div>
-                <div class="pt-2 border-t border-white/5 flex justify-between items-center">
-                    <span class="text-xs text-iosGray">Changer le code PIN</span>
-                    <button onclick="app.changePinCode()" class="text-xs text-iosBlue font-medium">Modifier</button>
-                </div>
-            </div>
 
-            <!-- IndexedDB Storage Info -->
-            <div class="bg-iosCard rounded-2xl p-4 border border-white/5 space-y-3">
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-white flex items-center gap-2">
-                        <i class="fa-solid fa-hard-drive text-iosOrange"></i> Stockage IndexedDB
-                    </span>
-                    <span id="storage-usage-text" class="text-xs text-iosGray font-mono">Calcul...</span>
+                <!-- Bouton d'ajout de photos/vidéos -->
+                <label class="w-full py-3.5 bg-iosBlue/15 border border-iosBlue/30 text-iosBlue font-medium rounded-2xl flex items-center justify-center space-x-2 active:scale-[0.98] transition cursor-pointer">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>Ajouter photos & vidéos</span>
+                    <input type="file" id="mediaInput" multiple accept="image/*,video/*" class="hidden" onchange="handleMediaUpload(event)">
+                </label>
+
+                <!-- Grille des médias du dossier -->
+                <div id="mediaGrid" class="grid grid-cols-3 gap-2"></div>
+            </div>
+        </section>
+
+        <!-- TAB 2: DIAPORAMA ALÉATOIRE -->
+        <section id="tabSlideshow" class="tab-content hidden space-y-6">
+            <div class="bg-iosCard p-4 rounded-2xl border border-iosBorder space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-semibold">Sélectionner les dossiers</span>
+                    <button onclick="toggleSelectAllFolders()" id="selectAllBtn" class="text-xs text-iosBlue font-medium">Tout sélectionner</button>
                 </div>
-                <button onclick="app.confirmClearStorage()" class="w-full bg-iosRed/10 text-iosRed text-xs py-2.5 rounded-xl font-semibold border border-iosRed/20 flex items-center justify-center gap-1.5 ios-btn-press mt-2">
-                    <i class="fa-solid fa-trash-can"></i> Réinitialiser l'application
+
+                <div id="slideshowFolderList" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+
+                <div class="pt-2 border-t border-iosBorder space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-iosGray">Durée d'affichage (Sec)</span>
+                        <select id="slideshowTimerSelect" class="bg-black border border-iosBorder rounded-xl px-3 py-1.5 text-sm text-iosBlue font-medium outline-none">
+                            <option value="2">2 s</option>
+                            <option value="3" selected>3 s</option>
+                            <option value="5">5 s</option>
+                            <option value="10">10 s</option>
+                            <option value="15">15 s</option>
+                            <option value="30">30 s</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-iosGray">Lecture vidéos</span>
+                        <select id="videoModeSelect" class="bg-black border border-iosBorder rounded-xl px-3 py-1.5 text-sm text-iosBlue font-medium outline-none">
+                            <option value="full">Entière</option>
+                            <option value="timer">Chrono fixe</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="startSlideshow()" class="w-full py-4 bg-iosBlue font-semibold text-white rounded-2xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-play text-sm"></i>
+                    <span>Lancer le Diaporama Aléatoire</span>
                 </button>
             </div>
         </section>
 
+        <!-- TAB 3: RÉGLAGES -->
+        <section id="tabSettings" class="tab-content hidden space-y-4">
+            <div class="bg-iosCard rounded-2xl border border-iosBorder divide-y divide-iosBorder overflow-hidden">
+                <div class="p-4 flex items-center justify-between">
+                    <div>
+                        <div class="font-medium text-sm">Code de Sécurité PIN</div>
+                        <div class="text-xs text-iosGray mt-0.5">Code par défaut : 0507</div>
+                    </div>
+                    <button onclick="changePinModal()" class="text-xs text-iosBlue font-medium bg-iosBlue/10 px-3 py-1.5 rounded-lg">Modifier</button>
+                </div>
+
+                <div class="p-4 flex items-center justify-between">
+                    <div>
+                        <div class="font-medium text-sm">Stockage IndexedDB</div>
+                        <div id="storageUsage" class="text-xs text-iosGray mt-0.5">Calcul en cours...</div>
+                    </div>
+                    <button onclick="clearAllData()" class="text-xs text-iosRed font-medium bg-iosRed/10 px-3 py-1.5 rounded-lg">Vider tout</button>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Bottom Nav Bar iOS -->
-    <nav class="fixed bottom-0 left-0 right-0 z-30 glass-nav px-6 py-2 flex justify-around items-center">
-        <button onclick="app.switchTab('folders')" id="nav-btn-folders" class="flex flex-col items-center gap-1 text-iosBlue ios-btn-press">
-            <i class="fa-solid fa-folder text-xl"></i>
-            <span class="text-[10px] font-medium tracking-tight">Dossiers</span>
+    <!-- BARRE DE NAVIGATION INFÉRIEURE iOS -->
+    <nav class="fixed bottom-0 left-0 right-0 glass border-t border-iosBorder/40 px-6 py-2 flex justify-around items-center z-20">
+        <button onclick="switchTab('folders')" id="nav-folders" class="nav-item flex flex-col items-center space-y-1 text-iosBlue">
+            <i class="fa-solid fa-folder text-lg"></i>
+            <span class="text-[10px] font-medium">Dossiers</span>
         </button>
-        <button onclick="app.switchTab('random')" id="nav-btn-random" class="flex flex-col items-center gap-1 text-iosGray ios-btn-press">
-            <i class="fa-solid fa-shuffle text-xl"></i>
-            <span class="text-[10px] font-medium tracking-tight">Diaporama</span>
+        <button onclick="switchTab('slideshow')" id="nav-slideshow" class="nav-item flex flex-col items-center space-y-1 text-iosGray">
+            <i class="fa-solid fa-shuffle text-lg"></i>
+            <span class="text-[10px] font-medium">Aléatoire</span>
         </button>
-        <button onclick="app.switchTab('settings')" id="nav-btn-settings" class="flex flex-col items-center gap-1 text-iosGray ios-btn-press">
-            <i class="fa-solid fa-gear text-xl"></i>
-            <span class="text-[10px] font-medium tracking-tight">Réglages</span>
+        <button onclick="switchTab('settings')" id="nav-settings" class="nav-item flex flex-col items-center space-y-1 text-iosGray">
+            <i class="fa-solid fa-gear text-lg"></i>
+            <span class="text-[10px] font-medium">Réglages</span>
         </button>
     </nav>
 
-    <!-- MODAL: CREATE / EDIT FOLDER -->
-    <div id="modal-folder-editor" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md hidden px-4">
-        <div class="bg-iosCard border border-white/10 w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl fade-in">
-            <h3 id="folder-modal-title" class="text-base font-semibold text-center">Nouveau Dossier</h3>
-            <input type="text" id="folder-name-input" placeholder="Nom du dossier..." class="w-full bg-iosCardSecondary border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-iosBlue placeholder-iosGray">
-            <div class="flex gap-2 pt-2">
-                <button onclick="app.closeFolderModal()" class="flex-1 bg-iosCardSecondary text-iosGray text-sm font-medium py-2.5 rounded-xl ios-btn-press">
-                    Annuler
-                </button>
-                <button onclick="app.saveFolder()" class="flex-1 bg-iosBlue text-white text-sm font-semibold py-2.5 rounded-xl ios-btn-press">
-                    Enregistrer
-                </button>
-            </div>
-        </div>
+    <!-- MODAL DU DIAPORAMA ULTRA-ÉPURÉ (SEULEMENT UNE CROIX DISCRÈTE) -->
+    <div id="slideshowOverlay" class="fixed inset-0 z-50 bg-black hidden flex items-center justify-center">
+        <!-- Croix discrète en haut à gauche pour quitter -->
+        <button onclick="stopSlideshow()" class="absolute top-6 left-6 z-50 w-10 h-10 rounded-full bg-black/40 text-white/70 hover:text-white backdrop-blur-md flex items-center justify-center transition active:scale-90">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+
+        <!-- Conteneur média du diaporama -->
+        <div id="slideshowMediaContainer" class="w-full h-full flex items-center justify-center p-0"></div>
     </div>
 
-    <!-- MODAL: POST IMPORT NOTICE -->
-    <div id="modal-delete-notice" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden px-4">
-        <div class="bg-iosCard border border-white/10 w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl text-center fade-in">
-            <div class="w-12 h-12 bg-iosGreen/15 text-iosGreen rounded-full flex items-center justify-center mx-auto text-xl">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <h3 class="text-base font-semibold text-white">Importation Réussie !</h3>
-            <p class="text-xs text-iosGray leading-relaxed">
-                <span id="imported-count-text" class="text-white font-semibold">0</span> média(s) ont été enregistrés avec succès dans l'application.
-            </p>
-            <div class="bg-iosCardSecondary p-3.5 rounded-xl border border-white/5 text-left text-xs text-iosTextSecondary space-y-1.5">
-                <div class="flex items-center gap-1.5 text-iosOrange font-medium">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <span>Rappel Galerie Smartphone :</span>
-                </div>
-                <p>
-                    N'oubliez pas de **supprimer ces photos/vidéos de la galerie de votre téléphone** (et de vider la corbeille iOS) pour libérer de l'espace sur votre stockage.
-                </p>
-            </div>
-            <button onclick="app.closeDeleteNoticeModal()" class="w-full bg-iosBlue text-white font-semibold py-3 rounded-xl text-sm ios-btn-press">
-                J'ai compris
-            </button>
-        </div>
-    </div>
-
-    <!-- FULLSCREEN LIGHTBOX & SLIDESHOW VIEWER -->
-    <div id="fullscreen-slideshow" class="fixed inset-0 z-50 bg-black hidden flex flex-col justify-between items-center">
-        <!-- Top Overlay Nav -->
-        <div class="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20 glass-header">
-            <span id="slideshow-info" class="text-xs font-semibold text-iosGray">1 / 1</span>
-            <button onclick="app.stopSlideshow()" class="text-white bg-white/20 hover:bg-white/30 rounded-full w-8 h-8 flex items-center justify-center text-sm backdrop-blur-md ios-btn-press">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        <!-- Media Display Area -->
-        <div id="slideshow-container" class="w-full h-full flex items-center justify-center relative p-1" onclick="app.nextRandomMedia()">
-            <!-- Dynamic Image / Video Insertion -->
-        </div>
-
-        <!-- Bottom Controls Bar -->
-        <div class="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-6 z-20">
-            <button onclick="event.stopPropagation(); app.prevRandomMedia()" class="bg-white/10 hover:bg-white/20 text-white rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-md border border-white/10 ios-btn-press">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            <button id="slideshow-pause-btn" onclick="event.stopPropagation(); app.toggleSlideshowPause()" class="bg-white/10 hover:bg-white/20 text-white rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-md border border-white/10 ios-btn-press">
-                <i class="fa-solid fa-pause"></i>
-            </button>
-            <button onclick="event.stopPropagation(); app.nextRandomMedia()" class="bg-white/10 hover:bg-white/20 text-white rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-md border border-white/10 ios-btn-press">
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-        </div>
-    </div>
-
-    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <!-- SCRIPT APPLICATION -->
     <script>
-        class App {
-            constructor() {
-                this.db = null;
-                this.currentTab = 'folders';
-                this.currentFolderId = null;
-                this.folders = [];
-                this.filterType = 'all'; // 'all', 'image', 'video'
-                this.searchQuery = '';
+        // CONFIGURATION & VARIABLES GLOBALES
+        let currentPin = "0507";
+        let enteredPin = "";
+        let db = null;
+        let currentFolderId = null;
+        let slideshowInterval = null;
+        let activeSlideshowQueue = [];
+        let activeSlideshowIndex = 0;
 
-                // Security PIN (Default 0507)
-                this.pinEnabled = localStorage.getItem('vault_pin_enabled') !== 'false';
-                this.pinCode = localStorage.getItem('vault_pin') || '0507';
-                this.enteredPin = '';
-
-                // Slideshow State
-                this.slideshowQueue = [];
-                this.slideshowIndex = 0;
-                this.slideshowTimer = null;
-                this.isPaused = false;
-                
-                // Settings
-                this.photoInterval = parseInt(localStorage.getItem('setting_timer')) || 5;
-                this.playFullVideo = localStorage.getItem('setting_full_vid') !== 'false';
-                this.unmuteVideo = localStorage.getItem('setting_unmute_vid') === 'true';
-
-                this.initIndexedDB().then(() => {
-                    this.checkSecurityLock();
-                    this.loadFolders();
-                    this.loadSettingsUI();
-                });
-            }
-
-            // INDEXEDDB DATABASE INITIALIZATION
-            initIndexedDB() {
-                return new Promise((resolve, reject) => {
-                    const request = indexedDB.open('iOSMediaVaultDB_v2', 1);
-                    request.onupgradeneeded = (e) => {
-                        const db = e.target.result;
-                        if (!db.objectStoreNames.contains('folders')) {
-                            db.createObjectStore('folders', { keyPath: 'id' });
-                        }
-                        if (!db.objectStoreNames.contains('media')) {
-                            const mediaStore = db.createObjectStore('media', { keyPath: 'id' });
-                            mediaStore.createIndex('folderId', 'folderId', { unique: false });
-                        }
-                    };
-                    request.onsuccess = (e) => {
-                        this.db = e.target.result;
-                        resolve();
-                    };
-                    request.onerror = (e) => reject(e);
-                });
-            }
-
-            // SECURITY LOCK LOGIC
-            checkSecurityLock() {
-                const screen = document.getElementById('security-lock-screen');
-                if (this.pinEnabled && this.pinCode) {
-                    screen.classList.remove('hidden');
-                } else {
-                    screen.classList.add('hidden');
-                }
-            }
-
-            enterPin(digit) {
-                if (this.enteredPin.length < 4) {
-                    this.enteredPin += digit;
-                    this.updatePinDots();
-                }
-
-                if (this.enteredPin.length === 4) {
-                    if (this.enteredPin === this.pinCode) {
-                        document.getElementById('security-lock-screen').classList.add('hidden');
-                        this.enteredPin = '';
-                    } else {
-                        // Shake feedback
-                        document.getElementById('pin-dots').classList.add('animate-bounce');
-                        setTimeout(() => {
-                            document.getElementById('pin-dots').classList.remove('animate-bounce');
-                            this.clearPin();
-                        }, 400);
+        // INITIALISATION INDEXEDDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open("VaultMediaApp", 1);
+                request.onupgradeneeded = (e) => {
+                    const database = e.target.result;
+                    if (!database.objectStoreNames.contains("folders")) {
+                        database.createObjectStore("folders", { keyPath: "id" });
                     }
-                }
-            }
-
-            clearPin() {
-                this.enteredPin = '';
-                this.updatePinDots();
-            }
-
-            updatePinDots() {
-                const dots = document.getElementById('pin-dots').children;
-                for (let i = 0; i < 4; i++) {
-                    if (i < this.enteredPin.length) {
-                        dots[i].className = 'w-3.5 h-3.5 rounded-full bg-iosBlue border border-iosBlue';
-                    } else {
-                        dots[i].className = 'w-3.5 h-3.5 rounded-full border border-white/40 bg-transparent';
+                    if (!database.objectStoreNames.contains("media")) {
+                        const mediaStore = database.createObjectStore("media", { keyPath: "id" });
+                        mediaStore.createIndex("folderId", "folderId", { unique: false });
                     }
-                }
-            }
-
-            togglePinProtection() {
-                this.pinEnabled = !this.pinEnabled;
-                localStorage.setItem('vault_pin_enabled', this.pinEnabled);
-                this.updatePinStatusBtn();
-            }
-
-            changePinCode() {
-                const current = prompt("Entrez le code PIN actuel :");
-                if (current === this.pinCode) {
-                    const newPin = prompt("Entrez le nouveau code PIN (4 chiffres) :");
-                    if (newPin && newPin.length === 4 && !isNaN(newPin)) {
-                        this.pinCode = newPin;
-                        localStorage.setItem('vault_pin', newPin);
-                        alert("Code PIN modifié avec succès !");
-                        this.updatePinStatusBtn();
-                    } else {
-                        alert("Le code PIN doit comporter exactement 4 chiffres.");
-                    }
-                } else if (current !== null) {
-                    alert("Code PIN actuel incorrect.");
-                }
-            }
-
-            updatePinStatusBtn() {
-                const btn = document.getElementById('pin-status-btn');
-                if (this.pinEnabled) {
-                    btn.innerText = `Activé (${this.pinCode})`;
-                    btn.className = "text-xs font-semibold px-3 py-1.5 rounded-lg bg-iosGreen/20 text-iosGreen";
-                } else {
-                    btn.innerText = "Désactivé";
-                    btn.className = "text-xs font-semibold px-3 py-1.5 rounded-lg bg-iosCardSecondary text-iosGray";
-                }
-            }
-
-            // NAVIGATION & TABS
-            switchTab(tab) {
-                this.currentTab = tab;
-                document.getElementById('tab-folders').classList.add('hidden');
-                document.getElementById('tab-random').classList.add('hidden');
-                document.getElementById('tab-settings').classList.add('hidden');
-
-                ['folders', 'random', 'settings'].forEach(t => {
-                    const btn = document.getElementById(`nav-btn-${t}`);
-                    btn.className = 'flex flex-col items-center gap-1 text-iosGray ios-btn-press';
-                });
-
-                document.getElementById(`nav-btn-${tab}`).className = 'flex flex-col items-center gap-1 text-iosBlue ios-btn-press';
-
-                if (tab === 'folders') {
-                    document.getElementById('tab-folders').classList.remove('hidden');
-                    if (this.currentFolderId) {
-                        this.showFolderDetailHeader();
-                    } else {
-                        this.showFoldersHeader();
-                    }
-                } else if (tab === 'random') {
-                    document.getElementById('tab-random').classList.remove('hidden');
-                    this.setHeader('Diaporama Aléatoire', false, false);
-                    this.renderRandomFolderSelector();
-                } else if (tab === 'settings') {
-                    document.getElementById('tab-settings').classList.remove('hidden');
-                    this.setHeader('Réglages', false, false);
-                    this.updateStorageSize();
-                }
-            }
-
-            setHeader(title, showBack = false, showPlus = true) {
-                document.getElementById('header-title').innerText = title;
-                const backBtn = document.getElementById('header-back-btn');
-                const actionBtn = document.getElementById('header-action-btn');
-
-                if (showBack) backBtn.classList.remove('hidden');
-                else backBtn.classList.add('hidden');
-
-                if (showPlus) actionBtn.classList.remove('hidden');
-                else actionBtn.classList.add('hidden');
-            }
-
-            showFoldersHeader() {
-                this.setHeader('Mes Dossiers', false, true);
-            }
-
-            showFolderDetailHeader() {
-                const folder = this.folders.find(f => f.id === this.currentFolderId);
-                this.setHeader(folder ? folder.name : 'Dossier', true, false);
-            }
-
-            goBack() {
-                this.currentFolderId = null;
-                document.getElementById('folder-detail-view').classList.add('hidden');
-                document.getElementById('folders-grid').classList.remove('hidden');
-                document.getElementById('search-filter-bar').classList.remove('hidden');
-                this.showFoldersHeader();
-                this.loadFolders();
-            }
-
-            // FOLDER MANAGEMENT
-            openCreateFolderModal() {
-                this.editingFolderId = null;
-                document.getElementById('folder-modal-title').innerText = "Nouveau Dossier";
-                document.getElementById('folder-name-input').value = '';
-                document.getElementById('modal-folder-editor').classList.remove('hidden');
-            }
-
-            openEditFolderModal() {
-                const folder = this.folders.find(f => f.id === this.currentFolderId);
-                if (!folder) return;
-
-                this.editingFolderId = folder.id;
-                document.getElementById('folder-modal-title').innerText = "Modifier le Dossier";
-                document.getElementById('folder-name-input').value = folder.name;
-                document.getElementById('modal-folder-editor').classList.remove('hidden');
-            }
-
-            closeFolderModal() {
-                document.getElementById('modal-folder-editor').classList.add('hidden');
-            }
-
-            saveFolder() {
-                const name = document.getElementById('folder-name-input').value.trim();
-                if (!name) return;
-
-                const tx = this.db.transaction('folders', 'readwrite');
-                const store = tx.objectStore('folders');
-
-                if (this.editingFolderId) {
-                    store.get(this.editingFolderId).onsuccess = (e) => {
-                        const folder = e.target.result;
-                        folder.name = name;
-                        store.put(folder);
-                    };
-                } else {
-                    const folder = {
-                        id: 'f_' + Date.now(),
-                        name: name,
-                        createdAt: new Date().toISOString()
-                    };
-                    store.add(folder);
-                }
-
-                tx.oncomplete = () => {
-                    this.closeFolderModal();
-                    this.loadFolders();
-                    if (this.currentFolderId) this.showFolderDetailHeader();
                 };
-            }
-
-            loadFolders() {
-                const tx = this.db.transaction(['folders', 'media'], 'readonly');
-                const folderStore = tx.objectStore('folders');
-                const mediaStore = tx.objectStore('media');
-
-                folderStore.getAll().onsuccess = (e) => {
-                    this.folders = e.target.result;
-                    mediaStore.getAll().onsuccess = (e2) => {
-                        const allMedia = e2.target.result;
-                        this.renderFoldersGrid(this.folders, allMedia);
-                    };
+                request.onsuccess = (e) => {
+                    db = e.target.result;
+                    resolve(db);
                 };
+                request.onerror = (e) => reject(e);
+            });
+        }
+
+        // ACCÈS SÉCURISÉ PIN
+        function enterPin(digit) {
+            if (enteredPin.length < 4) {
+                enteredPin += digit;
+                updatePinDots();
+                if (enteredPin.length === 4) {
+                    setTimeout(() => {
+                        if (enteredPin === currentPin) {
+                            document.getElementById("lockScreen").classList.add("hidden");
+                            enteredPin = "";
+                            updatePinDots();
+                            loadFolders();
+                            updateStorageUsage();
+                        } else {
+                            alert("Code PIN incorrect");
+                            enteredPin = "";
+                            updatePinDots();
+                        }
+                    }, 150);
+                }
             }
+        }
 
-            renderFoldersGrid(folders, allMedia) {
-                const grid = document.getElementById('folders-grid');
-                const emptyState = document.getElementById('folders-empty');
-                grid.innerHTML = '';
+        function clearPin() {
+            enteredPin = enteredPin.slice(0, -1);
+            updatePinDots();
+        }
 
+        function updatePinDots() {
+            const dots = document.querySelectorAll("#pinDots div");
+            dots.forEach((dot, idx) => {
+                if (idx < enteredPin.length) {
+                    dot.classList.add("bg-white", "border-white");
+                } else {
+                    dot.classList.remove("bg-white", "border-white");
+                }
+            });
+        }
+
+        // CHANGEMENT DE NAVIGATION (ONGLETS)
+        function switchTab(tab) {
+            document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+            document.querySelectorAll(".nav-item").forEach(el => {
+                el.classList.remove("text-iosBlue");
+                el.classList.add("text-iosGray");
+            });
+
+            if (tab === 'folders') {
+                document.getElementById("tabFolders").classList.remove("hidden");
+                document.getElementById("nav-folders").classList.add("text-iosBlue");
+                document.getElementById("headerTitle").innerText = "Dossiers";
+                document.getElementById("addFolderBtn").classList.remove("hidden");
+            } else if (tab === 'slideshow') {
+                document.getElementById("tabSlideshow").classList.remove("hidden");
+                document.getElementById("nav-slideshow").classList.add("text-iosBlue");
+                document.getElementById("headerTitle").innerText = "Diaporama";
+                document.getElementById("addFolderBtn").classList.add("hidden");
+                renderSlideshowFolderList();
+            } else if (tab === 'settings') {
+                document.getElementById("tabSettings").classList.remove("hidden");
+                document.getElementById("nav-settings").classList.add("text-iosBlue");
+                document.getElementById("headerTitle").innerText = "Réglages";
+                document.getElementById("addFolderBtn").classList.add("hidden");
+                updateStorageUsage();
+            }
+        }
+
+        // GESTION DES DOSSIERS
+        function openCreateFolderModal() {
+            const folderName = prompt("Nom du nouveau dossier :");
+            if (folderName && folderName.trim() !== "") {
+                const folder = {
+                    id: 'folder_' + Date.now(),
+                    name: folderName.trim(),
+                    createdAt: new Date()
+                };
+                const tx = db.transaction("folders", "readwrite");
+                tx.objectStore("folders").add(folder);
+                tx.oncomplete = () => loadFolders();
+            }
+        }
+
+        function loadFolders() {
+            const grid = document.getElementById("foldersGrid");
+            grid.innerHTML = "";
+            const tx = db.transaction("folders", "readonly");
+            const store = tx.objectStore("folders");
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                const folders = request.result;
                 if (folders.length === 0) {
-                    emptyState.classList.remove('hidden');
-                    grid.classList.add('hidden');
+                    grid.innerHTML = `<div class="col-span-2 text-center py-12 text-iosGray text-sm">Aucun dossier. Appuyez sur + pour en créer un.</div>`;
                     return;
                 }
-
-                emptyState.classList.add('hidden');
-                grid.classList.remove('hidden');
-
                 folders.forEach(folder => {
-                    const folderMedia = allMedia.filter(m => m.folderId === folder.id);
-                    const count = folderMedia.length;
-                    const coverMedia = count > 0 ? folderMedia[0] : null;
-
-                    const card = document.createElement('div');
-                    card.className = 'bg-iosCard rounded-2xl p-3 border border-white/5 flex flex-col justify-between cursor-pointer ios-btn-press hover:bg-iosCardSecondary transition-all relative';
-                    card.onclick = () => this.openFolder(folder.id);
-
-                    let coverHtml = `<div class="w-full aspect-square bg-iosCardSecondary rounded-xl flex items-center justify-center text-iosGray mb-2">
-                        <i class="fa-solid fa-folder text-4xl text-iosBlue/70"></i>
-                    </div>`;
-
-                    if (coverMedia) {
-                        const blobUrl = URL.createObjectURL(coverMedia.blob);
-                        if (coverMedia.type.startsWith('image/')) {
-                            coverHtml = `<div class="w-full aspect-square rounded-xl overflow-hidden mb-2 relative bg-black">
-                                <img src="${blobUrl}" class="w-full h-full object-cover">
-                            </div>`;
-                        } else {
-                            coverHtml = `<div class="w-full aspect-square rounded-xl overflow-hidden mb-2 relative bg-black flex items-center justify-center">
-                                <video src="${blobUrl}#t=0.5" class="w-full h-full object-cover"></video>
-                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                    <i class="fa-solid fa-play text-white/80 text-lg"></i>
-                                </div>
-                            </div>`;
-                        }
-                    }
-
+                    const card = document.createElement("div");
+                    card.className = "bg-iosCard border border-iosBorder p-4 rounded-2xl flex flex-col justify-between h-32 active:scale-95 transition cursor-pointer";
+                    card.onclick = () => openFolder(folder.id, folder.name);
                     card.innerHTML = `
-                        ${coverHtml}
+                        <div class="flex items-center justify-between">
+                            <i class="fa-solid fa-folder text-3xl text-iosBlue"></i>
+                        </div>
                         <div>
-                            <h3 class="font-semibold text-xs truncate text-white">${folder.name}</h3>
-                            <span class="text-[11px] text-iosGray">${count} élément(s)</span>
+                            <div class="font-semibold text-sm truncate">${folder.name}</div>
                         </div>
                     `;
                     grid.appendChild(card);
                 });
-            }
+            };
+        }
 
-            openFolder(folderId) {
-                this.currentFolderId = folderId;
-                document.getElementById('folders-grid').classList.add('hidden');
-                document.getElementById('search-filter-bar').classList.add('hidden');
-                document.getElementById('folder-detail-view').classList.remove('hidden');
-                this.showFolderDetailHeader();
-                this.loadFolderMedia(folderId);
-            }
+        function openFolder(folderId, folderName) {
+            currentFolderId = folderId;
+            document.getElementById("currentFolderName").innerText = folderName;
+            document.getElementById("foldersGrid").classList.add("hidden");
+            document.getElementById("folderDetailView").classList.remove("hidden");
+            document.getElementById("addFolderBtn").classList.add("hidden");
+            loadFolderMedia(folderId);
+        }
 
-            loadFolderMedia(folderId) {
-                const tx = this.db.transaction('media', 'readonly');
-                const store = tx.objectStore('media');
-                const index = store.index('folderId');
+        function closeFolderDetail() {
+            currentFolderId = null;
+            document.getElementById("folderDetailView").classList.add("hidden");
+            document.getElementById("foldersGrid").classList.remove("hidden");
+            document.getElementById("addFolderBtn").classList.remove("hidden");
+            loadFolders();
+        }
 
-                index.getAll(folderId).onsuccess = (e) => {
-                    let mediaItems = e.target.result;
-
-                    // Filter search / type
-                    if (this.searchQuery) {
-                        mediaItems = mediaItems.filter(m => m.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
-                    }
-                    if (this.filterType === 'image') {
-                        mediaItems = mediaItems.filter(m => m.type.startsWith('image/'));
-                    } else if (this.filterType === 'video') {
-                        mediaItems = mediaItems.filter(m => m.type.startsWith('video/'));
-                    }
-
-                    this.renderMediaGrid(mediaItems);
-                };
-            }
-
-            renderMediaGrid(mediaItems) {
-                const grid = document.getElementById('media-grid');
-                const empty = document.getElementById('media-empty');
-                grid.innerHTML = '';
-
-                document.getElementById('folder-detail-count').innerText = `${mediaItems.length} élément(s)`;
+        function deleteCurrentFolder() {
+            if (confirm("Supprimer ce dossier et tout son contenu ?")) {
+                const tx = db.transaction(["folders", "media"], "readwrite");
+                tx.objectStore("folders").delete(currentFolderId);
                 
-                let totalBytes = 0;
-                mediaItems.forEach(m => totalBytes += (m.blob ? m.blob.size : 0));
-                document.getElementById('folder-detail-size').innerText = `${(totalBytes / (1024 * 1024)).toFixed(1)} MB`;
+                const mediaStore = tx.objectStore("media");
+                const index = mediaStore.index("folderId");
+                const req = index.getAllKeys(currentFolderId);
+                req.onsuccess = () => {
+                    req.result.forEach(key => mediaStore.delete(key));
+                };
+                tx.oncomplete = () => closeFolderDetail();
+            }
+        }
 
-                if (mediaItems.length === 0) {
-                    empty.classList.remove('hidden');
-                    grid.classList.add('hidden');
+        // GESTION DES MÉDIAS (SANS POPUP DE SUPPRESSION POST-IMPORT)
+        function handleMediaUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0 || !currentFolderId) return;
+
+            const tx = db.transaction("media", "readwrite");
+            const store = tx.objectStore("media");
+
+            Array.from(files).forEach(file => {
+                const mediaObj = {
+                    id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    folderId: currentFolderId,
+                    name: file.name,
+                    type: file.type.startsWith('video') ? 'video' : 'image',
+                    fileData: file,
+                    createdAt: new Date()
+                };
+                store.add(mediaObj);
+            });
+
+            tx.oncomplete = () => {
+                event.target.value = "";
+                loadFolderMedia(currentFolderId);
+            };
+        }
+
+        function loadFolderMedia(folderId) {
+            const grid = document.getElementById("mediaGrid");
+            grid.innerHTML = "";
+            const tx = db.transaction("media", "readonly");
+            const store = tx.objectStore("media");
+            const index = store.index("folderId");
+            const request = index.getAll(folderId);
+
+            request.onsuccess = () => {
+                const items = request.result;
+                if (items.length === 0) {
+                    grid.innerHTML = `<div class="col-span-3 text-center py-8 text-iosGray text-xs">Dossier vide.</div>`;
                     return;
                 }
-
-                empty.classList.add('hidden');
-                grid.classList.remove('hidden');
-
-                mediaItems.forEach(item => {
-                    const blobUrl = URL.createObjectURL(item.blob);
-                    const container = document.createElement('div');
-                    container.className = 'relative aspect-square rounded-xl overflow-hidden bg-iosCardSecondary border border-white/5';
-
-                    let mediaElem = item.type.startsWith('image/')
-                        ? `<img src="${blobUrl}" class="w-full h-full object-cover cursor-pointer" onclick="app.previewSingleMedia('${item.id}')">`
-                        : `<div class="w-full h-full relative cursor-pointer" onclick="app.previewSingleMedia('${item.id}')">
-                               <video src="${blobUrl}#t=0.5" class="w-full h-full object-cover"></video>
-                               <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
-                                   <i class="fa-solid fa-play text-white text-sm"></i>
-                               </div>
-                           </div>`;
-
-                    container.innerHTML = `
-                        ${mediaElem}
-                        <button onclick="event.stopPropagation(); app.deleteMedia('${item.id}')" class="absolute top-1.5 right-1.5 bg-black/60 text-iosRed rounded-full w-6 h-6 flex items-center justify-center text-xs ios-btn-press">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    `;
-                    grid.appendChild(container);
-                });
-            }
-
-            // IMPORT MEDIA HANDLER
-            async handleMediaUpload(event) {
-                const files = event.target.files;
-                if (!files || files.length === 0 || !this.currentFolderId) return;
-
-                const tx = this.db.transaction('media', 'readwrite');
-                const store = tx.objectStore('media');
-
-                let count = 0;
-                for (let file of files) {
-                    const mediaObj = {
-                        id: 'm_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
-                        folderId: this.currentFolderId,
-                        name: file.name,
-                        type: file.type || 'application/octet-stream',
-                        blob: file,
-                        addedAt: new Date().toISOString()
-                    };
-                    store.add(mediaObj);
-                    count++;
-                }
-
-                tx.oncomplete = () => {
-                    document.getElementById('media-input').value = '';
-                    this.loadFolderMedia(this.currentFolderId);
-                    this.showDeleteNoticeModal(count);
-                };
-            }
-
-            showDeleteNoticeModal(count) {
-                document.getElementById('imported-count-text').innerText = count;
-                document.getElementById('modal-delete-notice').classList.remove('hidden');
-            }
-
-            closeDeleteNoticeModal() {
-                document.getElementById('modal-delete-notice').classList.add('hidden');
-            }
-
-            deleteMedia(mediaId) {
-                const tx = this.db.transaction('media', 'readwrite');
-                tx.objectStore('media').delete(mediaId);
-                tx.oncomplete = () => {
-                    this.loadFolderMedia(this.currentFolderId);
-                };
-            }
-
-            confirmDeleteFolder() {
-                if (!confirm("Voulez-vous vraiment supprimer ce dossier et tout son contenu ?")) return;
-                
-                const tx = this.db.transaction(['folders', 'media'], 'readwrite');
-                tx.objectStore('folders').delete(this.currentFolderId);
-
-                const mediaStore = tx.objectStore('media');
-                const index = mediaStore.index('folderId');
-                index.getAllKeys(this.currentFolderId).onsuccess = (e) => {
-                    e.target.result.forEach(key => mediaStore.delete(key));
-                };
-
-                tx.oncomplete = () => {
-                    this.goBack();
-                };
-            }
-
-            // RANDOM TAB & SLIDESHOW
-            renderRandomFolderSelector() {
-                const container = document.getElementById('random-folder-selector');
-                container.innerHTML = '';
-
-                if (this.folders.length === 0) {
-                    container.innerHTML = `<p class="text-xs text-iosGray text-center py-4">Aucun dossier disponible.</p>`;
-                    return;
-                }
-
-                this.folders.forEach(folder => {
-                    const label = document.createElement('label');
-                    label.className = 'flex items-center justify-between p-3 bg-iosCardSecondary rounded-xl cursor-pointer border border-white/5';
-                    label.innerHTML = `
-                        <span class="text-xs font-medium text-white">${folder.name}</span>
-                        <input type="checkbox" value="${folder.id}" class="folder-select-checkbox w-4 h-4 rounded text-iosBlue focus:ring-0 bg-iosBg border-white/20" checked>
-                    `;
-                    container.appendChild(label);
-                });
-            }
-
-            toggleSelectAllFolders() {
-                const checkboxes = document.querySelectorAll('.folder-select-checkbox');
-                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-                checkboxes.forEach(cb => cb.checked = !allChecked);
-                document.getElementById('toggle-select-all-btn').innerText = allChecked ? "Tout sélectionner" : "Tout désélectionner";
-            }
-
-            startSlideshow() {
-                const mediaTypeSelect = document.getElementById('random-media-type').value;
-
-                const tx = this.db.transaction('media', 'readonly');
-                const store = tx.objectStore('media');
-
-                store.getAll().onsuccess = (e) => {
-                    let allMedia = e.target.result;
-
-                    const checkboxes = document.querySelectorAll('.folder-select-checkbox:checked');
-                    const selectedFolderIds = Array.from(checkboxes).map(cb => cb.value);
-                    allMedia = allMedia.filter(m => selectedFolderIds.includes(m.folderId));
-
-                    // Filter Media Types
-                    if (mediaTypeSelect === 'image') {
-                        allMedia = allMedia.filter(m => m.type.startsWith('image/'));
-                    } else if (mediaTypeSelect === 'video') {
-                        allMedia = allMedia.filter(m => m.type.startsWith('video/'));
-                    }
-
-                    if (allMedia.length === 0) {
-                        alert("Aucun média correspondant à vos critères n'a été trouvé.");
-                        return;
-                    }
-
-                    this.slideshowQueue = this.shuffleArray(allMedia);
-                    this.slideshowIndex = 0;
-                    this.isPaused = false;
-                    document.getElementById('fullscreen-slideshow').classList.remove('hidden');
-                    this.renderSlideshowItem();
-                };
-            }
-
-            shuffleArray(array) {
-                const arr = [...array];
-                for (let i = arr.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [arr[i], arr[j]] = [arr[j], arr[i]];
-                }
-                return arr;
-            }
-
-            previewSingleMedia(mediaId) {
-                const tx = this.db.transaction('media', 'readonly');
-                tx.objectStore('media').get(mediaId).onsuccess = (e) => {
-                    const media = e.target.result;
-                    if (media) {
-                        this.slideshowQueue = [media];
-                        this.slideshowIndex = 0;
-                        this.isPaused = true;
-                        document.getElementById('fullscreen-slideshow').classList.remove('hidden');
-                        this.renderSlideshowItem();
-                    }
-                };
-            }
-
-            renderSlideshowItem() {
-                if (this.slideshowTimer) clearTimeout(this.slideshowTimer);
-
-                const container = document.getElementById('slideshow-container');
-                container.innerHTML = '';
-
-                if (this.slideshowQueue.length === 0) return;
-
-                const currentItem = this.slideshowQueue[this.slideshowIndex];
-                document.getElementById('slideshow-info').innerText = `${this.slideshowIndex + 1} / ${this.slideshowQueue.length}`;
-
-                const blobUrl = URL.createObjectURL(currentItem.blob);
-
-                if (currentItem.type.startsWith('image/')) {
-                    const img = document.createElement('img');
-                    img.src = blobUrl;
-                    img.className = 'max-w-full max-h-full object-contain rounded-lg shadow-2xl fade-in';
-                    container.appendChild(img);
-
-                    if (!this.isPaused && this.slideshowQueue.length > 1) {
-                        this.slideshowTimer = setTimeout(() => {
-                            this.nextRandomMedia();
-                        }, this.photoInterval * 1000);
-                    }
-                } else if (currentItem.type.startsWith('video/')) {
-                    const video = document.createElement('video');
-                    video.src = blobUrl;
-                    video.autoplay = true;
-                    video.controls = true;
-                    video.muted = !this.unmuteVideo;
-                    video.playsInline = true;
-                    video.className = 'max-w-full max-h-full object-contain rounded-lg fade-in';
-                    container.appendChild(video);
-
-                    if (!this.isPaused && this.slideshowQueue.length > 1) {
-                        if (this.playFullVideo) {
-                            video.onended = () => this.nextRandomMedia();
-                        } else {
-                            this.slideshowTimer = setTimeout(() => {
-                                this.nextRandomMedia();
-                            }, this.photoInterval * 1000);
-                        }
-                    }
-                }
-            }
-
-            nextRandomMedia() {
-                if (this.slideshowQueue.length <= 1) return;
-                this.slideshowIndex = (this.slideshowIndex + 1) % this.slideshowQueue.length;
-                this.renderSlideshowItem();
-            }
-
-            prevRandomMedia() {
-                if (this.slideshowQueue.length <= 1) return;
-                this.slideshowIndex = (this.slideshowIndex - 1 + this.slideshowQueue.length) % this.slideshowQueue.length;
-                this.renderSlideshowItem();
-            }
-
-            toggleSlideshowPause() {
-                this.isPaused = !this.isPaused;
-                const pauseIcon = document.getElementById('slideshow-pause-btn').querySelector('i');
-                if (this.isPaused) {
-                    pauseIcon.className = 'fa-solid fa-play';
-                    if (this.slideshowTimer) clearTimeout(this.slideshowTimer);
-                } else {
-                    pauseIcon.className = 'fa-solid fa-pause';
-                    this.renderSlideshowItem();
-                }
-            }
-
-            stopSlideshow() {
-                if (this.slideshowTimer) clearTimeout(this.slideshowTimer);
-                document.getElementById('fullscreen-slideshow').classList.add('hidden');
-                document.getElementById('slideshow-container').innerHTML = '';
-            }
-
-            // FILTER & SEARCH LOGIC
-            setFilterType(type) {
-                this.filterType = type;
-                ['all', 'image', 'video'].forEach(t => {
-                    const btn = document.getElementById(`filter-btn-${t}`);
-                    if (t === type) {
-                        btn.className = 'px-3.5 py-1.5 rounded-full bg-iosBlue text-white font-medium ios-btn-press';
+                items.forEach(item => {
+                    const url = URL.createObjectURL(item.fileData);
+                    const el = document.createElement("div");
+                    el.className = "relative aspect-square bg-black rounded-xl overflow-hidden border border-iosBorder group";
+                    
+                    if (item.type === 'image') {
+                        el.innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
                     } else {
-                        btn.className = 'px-3.5 py-1.5 rounded-full bg-iosCardSecondary text-iosGray font-medium ios-btn-press';
+                        el.innerHTML = `
+                            <video src="${url}" class="w-full h-full object-cover"></video>
+                            <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                <i class="fa-solid fa-play text-white/80 text-xs"></i>
+                            </div>
+                        `;
                     }
+                    grid.appendChild(el);
                 });
-                this.filterCurrentView();
-            }
+            };
+        }
 
-            filterCurrentView() {
-                this.searchQuery = document.getElementById('global-search-input').value.trim();
-                if (this.currentFolderId) {
-                    this.loadFolderMedia(this.currentFolderId);
-                } else {
-                    this.loadFolders();
+        // SELECTION POUR DIAPORAMA
+        function renderSlideshowFolderList() {
+            const container = document.getElementById("slideshowFolderList");
+            container.innerHTML = "";
+            const tx = db.transaction("folders", "readonly");
+            tx.objectStore("folders").getAll().onsuccess = (e) => {
+                const folders = e.target.result;
+                if (folders.length === 0) {
+                    container.innerHTML = `<div class="text-xs text-iosGray text-center py-2">Aucun dossier disponible.</div>`;
+                    return;
                 }
+                folders.forEach(f => {
+                    const div = document.createElement("label");
+                    div.className = "flex items-center justify-between p-2.5 bg-black rounded-xl border border-iosBorder text-sm cursor-pointer";
+                    div.innerHTML = `
+                        <span class="truncate">${f.name}</span>
+                        <input type="checkbox" value="${f.id}" class="folder-checkbox w-4 h-4 accent-iosBlue rounded">
+                    `;
+                    container.appendChild(div);
+                });
+            };
+        }
+
+        function toggleSelectAllFolders() {
+            const checkboxes = document.querySelectorAll(".folder-checkbox");
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            document.getElementById("selectAllBtn").innerText = allChecked ? "Tout sélectionner" : "Tout désélectionner";
+        }
+
+        // ALGORITHME VRAI ALÉATOIRE (FISHER-YATES SHUFFLE)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // DIAPORAMA EN MODE ULTRA-ÉPURÉ
+        function startSlideshow() {
+            const selectedFolderIds = Array.from(document.querySelectorAll(".folder-checkbox:checked")).map(cb => cb.value);
+            if (selectedFolderIds.length === 0) {
+                alert("Veuillez sélectionner au moins un dossier.");
+                return;
             }
 
-            // SETTINGS & STORAGE
-            loadSettingsUI() {
-                document.getElementById('timer-range-input').value = this.photoInterval;
-                document.getElementById('timer-val-display').innerText = `${this.photoInterval} sec`;
-                document.getElementById('setting-play-full-video').checked = this.playFullVideo;
-                document.getElementById('setting-unmute-video').checked = this.unmuteVideo;
-                this.updatePinStatusBtn();
-            }
+            const tx = db.transaction("media", "readonly");
+            const store = tx.objectStore("media");
+            store.getAll().onsuccess = (e) => {
+                const allMedia = e.target.result;
+                activeSlideshowQueue = allMedia.filter(m => selectedFolderIds.includes(m.folderId));
 
-            updateTimerSetting(val) {
-                this.photoInterval = parseInt(val);
-                document.getElementById('timer-val-display').innerText = `${val} sec`;
-                localStorage.setItem('setting_timer', val);
-            }
+                if (activeSlideshowQueue.length === 0) {
+                    alert("Les dossiers sélectionnés ne contiennent aucun média.");
+                    return;
+                }
 
-            saveSettings() {
-                this.playFullVideo = document.getElementById('setting-play-full-video').checked;
-                this.unmuteVideo = document.getElementById('setting-unmute-video').checked;
-                localStorage.setItem('setting_full_vid', this.playFullVideo);
-                localStorage.setItem('setting_unmute_vid', this.unmuteVideo);
-            }
+                // Application du vrai aléatoire
+                activeSlideshowQueue = shuffleArray(activeSlideshowQueue);
+                activeSlideshowIndex = 0;
 
-            updateStorageSize() {
-                if (!this.db) return;
-                const tx = this.db.transaction('media', 'readonly');
-                tx.objectStore('media').getAll().onsuccess = (e) => {
-                    let totalBytes = 0;
-                    e.target.result.forEach(item => {
-                        if (item.blob) totalBytes += item.blob.size;
-                    });
-                    document.getElementById('storage-usage-text').innerText = `${(totalBytes / (1024 * 1024)).toFixed(2)} MB (${e.target.result.length} éléments)`;
-                };
-            }
+                // Affichage Overlay Plein Écran
+                document.getElementById("slideshowOverlay").classList.remove("hidden");
+                renderSlideshowStep();
+            };
+        }
 
-            confirmClearStorage() {
-                if (confirm("ATTENTION : Cette action effacera définitivement tous les dossiers, photos et vidéos enregistrés.")) {
-                    const tx = this.db.transaction(['folders', 'media'], 'readwrite');
-                    tx.objectStore('folders').clear();
-                    tx.objectStore('media').clear();
-                    tx.oncomplete = () => {
-                        this.goBack();
-                        this.updateStorageSize();
-                        alert("Application réinitialisée.");
-                    };
+        function renderSlideshowStep() {
+            clearTimeout(slideshowInterval);
+            if (activeSlideshowQueue.length === 0) return;
+
+            const container = document.getElementById("slideshowMediaContainer");
+            container.innerHTML = "";
+
+            const currentMedia = activeSlideshowQueue[activeSlideshowIndex];
+            const url = URL.createObjectURL(currentMedia.fileData);
+            const timerSec = parseInt(document.getElementById("slideshowTimerSelect").value) || 3;
+            const videoMode = document.getElementById("videoModeSelect").value;
+
+            if (currentMedia.type === 'image') {
+                const img = document.createElement("img");
+                img.src = url;
+                img.className = "max-w-full max-h-full object-contain";
+                container.appendChild(img);
+
+                slideshowInterval = setTimeout(nextSlide, timerSec * 1000);
+            } else {
+                const video = document.createElement("video");
+                video.src = url;
+                video.autoplay = true;
+                video.playsInline = true;
+                video.controls = false;
+                video.className = "max-w-full max-h-full object-contain";
+                container.appendChild(video);
+
+                if (videoMode === 'full') {
+                    video.onended = nextSlide;
+                } else {
+                    slideshowInterval = setTimeout(nextSlide, timerSec * 1000);
                 }
             }
         }
 
-        let app;
+        function nextSlide() {
+            activeSlideshowIndex = (activeSlideshowIndex + 1) % activeSlideshowQueue.length;
+            renderSlideshowStep();
+        }
+
+        function stopSlideshow() {
+            clearTimeout(slideshowInterval);
+            document.getElementById("slideshowOverlay").classList.add("hidden");
+            document.getElementById("slideshowMediaContainer").innerHTML = "";
+        }
+
+        // RÉGLAGES & STOCKAGE
+        function updateStorageUsage() {
+            if (navigator.storage && navigator.storage.estimate) {
+                navigator.storage.estimate().then(estimate => {
+                    const mb = (estimate.usage / (1024 * 1024)).toFixed(1);
+                    document.getElementById("storageUsage").innerText = `Espace utilisé : ${mb} Mo`;
+                });
+            }
+        }
+
+        function changePinModal() {
+            const newPin = prompt("Saisissez le nouveau code PIN (4 chiffres) :");
+            if (newPin && newPin.length === 4 && !isNaN(newPin)) {
+                currentPin = newPin;
+                alert("Code PIN mis à jour avec succès.");
+            } else if (newPin !== null) {
+                alert("Code invalide. Le PIN doit comporter 4 chiffres.");
+            }
+        }
+
+        function clearAllData() {
+            if (confirm("ATTENTION : Cela supprimera définitivement tous vos dossiers et tous vos médias enregistrés.")) {
+                const tx = db.transaction(["folders", "media"], "readwrite");
+                tx.objectStore("folders").clear();
+                tx.objectStore("media").clear();
+                tx.oncomplete = () => {
+                    alert("Coffre-fort réinitialisé.");
+                    switchTab("folders");
+                    loadFolders();
+                    updateStorageUsage();
+                };
+            }
+        }
+
+        // DÉMARRAGE DE L'APPLICATION
         window.onload = () => {
-            app = new App();
+            initDB();
         };
     </script>
 </body>
