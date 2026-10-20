@@ -2,7 +2,10 @@
 <html lang="fr" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- Verrouillage strict du zoom et de la vue mobile iOS/Android -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Vault iOS - Medias & Diaporama</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,31 +30,43 @@
         }
     </script>
     <style>
-        body {
+        /* SÉCURISATION COMPLETE DU SCROLL, DU ZOOM ET DES DÉCALAGES HORIZONTAUX */
+        html, body {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            -webkit-user-select: none;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #000000;
             color: #ffffff;
         }
+
         .glass {
-            background: rgba(28, 28, 30, 0.75);
+            background: rgba(28, 28, 30, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
         }
+
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
         .hide-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
+            overscroll-behavior-y: contain;
         }
     </style>
 </head>
-<body class="bg-black text-white antialiased min-h-screen flex flex-col justify-between overflow-x-hidden">
+<body class="bg-black text-white antialiased w-full h-full flex flex-col justify-between overflow-hidden inset-0">
 
     <!-- ÉCRAN DE VERROUILLAGE (CODE PIN 0507) -->
-    <div id="lockScreen" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 transition-all duration-300">
+    <div id="lockScreen" class="fixed inset-0 z-50 bg-black backdrop-blur-xl flex flex-col items-center justify-center p-6 transition-all duration-300 touch-none">
         <div class="text-center mb-8">
             <div class="w-16 h-16 bg-iosCard border border-iosBorder rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl text-iosBlue shadow-lg">
                 <i class="fa-solid fa-lock"></i>
@@ -84,15 +99,15 @@
     </div>
 
     <!-- EN-TÊTE PRINCIPALE -->
-    <header class="sticky top-0 z-20 glass border-b border-iosBorder/40 px-5 py-4 flex items-center justify-between">
+    <header class="shrink-0 glass border-b border-iosBorder/40 px-5 py-4 flex items-center justify-between z-20 pt-safe">
         <h1 id="headerTitle" class="text-2xl font-bold tracking-tight">Dossiers</h1>
         <button id="addFolderBtn" onclick="openCreateFolderModal()" class="w-9 h-9 rounded-full bg-iosBlue/20 text-iosBlue flex items-center justify-center active:scale-95 transition">
             <i class="fa-solid fa-folder-plus text-base"></i>
         </button>
     </header>
 
-    <!-- CONTENU PRINCIPAL -->
-    <main class="flex-1 px-4 pt-4 pb-28 overflow-y-auto hide-scrollbar">
+    <!-- CONTENU PRINCIPAL DE DÉFILEMENT (SEULEMENT VERTICAL DANS CETTE ZONE) -->
+    <main class="flex-1 px-4 pt-4 pb-6 overflow-y-auto overflow-x-hidden hide-scrollbar">
 
         <!-- TAB 1: DOSSIERS ET MÉDIAS -->
         <section id="tabFolders" class="tab-content space-y-4">
@@ -149,7 +164,7 @@
                     <button onclick="toggleSelectAllFolders()" id="selectAllBtn" class="text-xs text-iosBlue font-medium">Tout sélectionner</button>
                 </div>
 
-                <div id="slideshowFolderList" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+                <div id="slideshowFolderList" class="space-y-2 max-h-48 overflow-y-auto pr-1 hide-scrollbar"></div>
 
                 <div class="pt-2 border-t border-iosBorder space-y-3">
                     <div class="flex items-center justify-between">
@@ -191,7 +206,6 @@
                     <button onclick="changePinModal()" class="text-xs text-iosBlue font-medium bg-iosBlue/10 px-3 py-1.5 rounded-lg">Modifier</button>
                 </div>
 
-                <!-- Export & Importation de masse ZIP -->
                 <div class="p-4 space-y-3">
                     <div class="font-medium text-sm">Sauvegarde & Importation ZIP</div>
                     <div class="grid grid-cols-2 gap-2">
@@ -220,7 +234,7 @@
     </main>
 
     <!-- BARRE DE NAVIGATION INFÉRIEURE iOS -->
-    <nav class="fixed bottom-0 left-0 right-0 glass border-t border-iosBorder/40 px-6 py-2 flex justify-around items-center z-20">
+    <nav class="shrink-0 glass border-t border-iosBorder/40 px-6 py-3 flex justify-around items-center z-20 pb-safe">
         <button onclick="switchTab('folders')" id="nav-folders" class="nav-item flex flex-col items-center space-y-1 text-iosBlue">
             <i class="fa-solid fa-folder text-lg"></i>
             <span class="text-[10px] font-medium">Dossiers</span>
@@ -236,7 +250,7 @@
     </nav>
 
     <!-- VISIONNEUSE DE MÉDIAS -->
-    <div id="mediaViewerModal" class="fixed inset-0 z-50 bg-black/95 hidden flex flex-col items-center justify-between p-4 backdrop-blur-md">
+    <div id="mediaViewerModal" class="fixed inset-0 z-50 bg-black/95 hidden flex flex-col items-center justify-between p-4 backdrop-blur-md touch-none">
         <div class="w-full flex items-center justify-between z-10 pt-2 px-2">
             <button onclick="closeMediaViewer()" class="w-10 h-10 rounded-full bg-iosCard border border-iosBorder text-white/80 flex items-center justify-center active:scale-90 transition">
                 <i class="fa-solid fa-xmark text-lg"></i>
@@ -260,10 +274,10 @@
     </div>
 
     <!-- MODAL DE DÉPLACEMENT DE DOSSIER -->
-    <div id="moveMediaModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div id="moveMediaModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 touch-none">
         <div class="bg-iosCard border border-iosBorder w-full max-w-sm rounded-2xl p-5 space-y-4">
             <h3 class="font-semibold text-base">Déplacer vers un dossier</h3>
-            <div id="targetFolderList" class="space-y-2 max-h-48 overflow-y-auto"></div>
+            <div id="targetFolderList" class="space-y-2 max-h-48 overflow-y-auto hide-scrollbar"></div>
             <div class="flex justify-end space-x-2 pt-2 border-t border-iosBorder">
                 <button onclick="closeMoveModal()" class="px-4 py-2 text-xs text-iosGray">Annuler</button>
             </div>
@@ -271,7 +285,7 @@
     </div>
 
     <!-- OVERLAY DIAPORAMA -->
-    <div id="slideshowOverlay" class="fixed inset-0 z-50 bg-black hidden flex items-center justify-center">
+    <div id="slideshowOverlay" class="fixed inset-0 z-50 bg-black hidden flex items-center justify-center touch-none">
         <button onclick="stopSlideshow()" class="absolute top-6 left-6 z-50 w-10 h-10 rounded-full bg-black/40 text-white/70 hover:text-white backdrop-blur-md flex items-center justify-center transition active:scale-90">
             <i class="fa-solid fa-xmark text-lg"></i>
         </button>
@@ -280,6 +294,25 @@
 
     <!-- SCRIPT APPLICATION -->
     <script>
+        // BLOQUER TOTALEMENT LE DOUBLE-TAP ZOOM ET LE PINCH ZOOM EN JS NAFIF
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+        document.addEventListener('touchmove', function (e) {
+            if (e.scale && e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
         let currentPin = "0507";
         let enteredPin = "";
         let db = null;
@@ -291,7 +324,6 @@
         let currentFolderMediaList = [];
         let currentViewerIndex = 0;
 
-        // Variables Mode Sélection
         let isSelectMode = false;
         let selectedMediaIds = new Set();
 
@@ -563,7 +595,6 @@
             };
         }
 
-        // MODE SÉLECTION DANS DOSSIER
         function toggleSelectMode() {
             isSelectMode = !isSelectMode;
             selectedMediaIds.clear();
@@ -659,7 +690,6 @@
             };
         }
 
-        // VISIONNEUSE GRAND ÉCRAN
         function openMediaViewer(index) {
             currentViewerIndex = index;
             document.getElementById("mediaViewerModal").classList.remove("hidden");
@@ -722,7 +752,6 @@
             }
         }
 
-        // EXPORTATION & IMPORTATION MASSE ZIP
         async function exportAllToZIP() {
             const zip = new JSZip();
             const tx = db.transaction(["folders", "media"], "readonly");
@@ -757,7 +786,6 @@
 
             const zip = await JSZip.loadAsync(file);
             
-            // Créer automatiquement le dossier "Importés"
             let importedFolderId = 'folder_' + Date.now();
             const folderTx = db.transaction("folders", "readwrite");
             folderTx.objectStore("folders").add({
@@ -795,7 +823,6 @@
             };
         }
 
-        // DIAPORAMA & RÉGLAGES
         function renderSlideshowFolderList() {
             const container = document.getElementById("slideshowFolderList");
             container.innerHTML = "";
@@ -907,7 +934,7 @@
         }
 
         function updateStorageUsage() {
-            if (navigator.storage && navigator.storageestimate) {
+            if (navigator.storage && navigator.storage.estimate) {
                 navigator.storage.estimate().then(estimate => {
                     const mb = (estimate.usage / (1024 * 1024)).toFixed(1);
                     document.getElementById("storageUsage").innerText = `Espace utilisé : ${mb} Mo`;
