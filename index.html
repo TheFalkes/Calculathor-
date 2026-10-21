@@ -1,1195 +1,1124 @@
 <!DOCTYPE html>
-<html lang="fr" class="dark">
+<html lang="fr" class="dark h-full bg-slate-950 text-slate-100 select-none">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>InCalc Vault</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        inBg: '#090910',
-                        inCard: '#131320',
-                        inCardBorder: '#202035',
-                        inPurple: '#5c53f5',
-                        inPurpleHover: '#4a41e0',
-                        inRed: '#ff453a',
-                        inGray: '#8e8e93'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        html, body {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            height: 100dvh;
-            overflow: hidden;
-            overscroll-behavior: none;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            -webkit-user-select: none;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #090910;
-            color: #ffffff;
-        }
-
-        header {
-            padding-top: calc(env(safe-area-inset-top, 47px) + 12px) !important;
-        }
-
-        nav {
-            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 8px) !important;
-        }
-
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        .pin-btn {
-            touch-action: manipulation;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        .pin-btn:active {
-            background-color: rgba(92, 83, 245, 0.4) !important;
-            transform: scale(0.92);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Calculathor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+    * {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    
+    /* Fast selection state without layout re-flow */
+    .media-card.is-selected {
+      outline: 2px solid #6366f1;
+      outline-offset: -2px;
+      transform: scale(0.96);
+    }
+    .media-card.is-selected .select-badge {
+      background-color: #4f46e5 !important;
+      border-color: #6366f1 !important;
+    }
+    .media-card.is-selected .select-icon {
+      opacity: 1 !important;
+    }
+  </style>
 </head>
-<body class="bg-inBg text-white antialiased w-full h-full flex flex-col justify-between overflow-hidden inset-0">
+<body class="h-full w-full overflow-hidden bg-slate-950 text-slate-100 flex flex-col justify-between">
 
-    <!-- ÉCRAN DE VERROUILLAGE PIN (0507) -->
-    <div id="lockScreen" class="fixed inset-0 z-50 bg-inBg flex flex-col items-center justify-center p-6 select-none">
-        <div class="text-center mb-10">
-            <div class="w-20 h-20 bg-inCard border border-inCardBorder rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl text-inPurple shadow-2xl">
-                <i class="fa-solid fa-lock"></i>
-            </div>
-            <h1 class="text-2xl font-black tracking-tight">InCalc</h1>
-            <p class="text-xs text-inGray mt-1 font-medium">Entrez votre code de sécurité</p>
+  <!-- APP CONTAINER -->
+  <div id="app" class="h-full w-full flex flex-col justify-between relative overflow-hidden">
+    
+    <!-- 1. LOCK SCREEN (DIGICODE) -->
+    <div id="lockScreen" class="absolute inset-0 z-50 bg-slate-950 flex flex-col justify-between p-6 max-w-md mx-auto w-full transition-all duration-300">
+      
+      <!-- Top Indicator -->
+      <div class="pt-8 flex flex-col items-center">
+        <div class="w-16 h-16 bg-indigo-600/20 text-indigo-500 rounded-3xl flex items-center justify-center text-2xl font-bold mb-4 shadow-lg shadow-indigo-500/10 border border-indigo-500/20">
+          <i class="fa-solid fa-calculator"></i>
         </div>
+        <h1 class="text-2xl font-bold tracking-tight text-white mb-1">Calculathor</h1>
+        <p class="text-xs text-slate-400 font-medium">Saisissez le code PIN (Défaut: 0507)</p>
+        
+        <!-- Code Dots -->
+        <div class="flex gap-4 mt-8" id="pinDots">
+          <div class="w-4 h-4 rounded-full border-2 border-slate-700 transition-all duration-200"></div>
+          <div class="w-4 h-4 rounded-full border-2 border-slate-700 transition-all duration-200"></div>
+          <div class="w-4 h-4 rounded-full border-2 border-slate-700 transition-all duration-200"></div>
+          <div class="w-4 h-4 rounded-full border-2 border-slate-700 transition-all duration-200"></div>
+        </div>
+      </div>
 
-        <div id="pinDots" class="flex space-x-5 mb-12">
-            <div class="w-4 h-4 rounded-full border-2 border-inGray/50 transition-all duration-200"></div>
-            <div class="w-4 h-4 rounded-full border-2 border-inGray/50 transition-all duration-200"></div>
-            <div class="w-4 h-4 rounded-full border-2 border-inGray/50 transition-all duration-200"></div>
-            <div class="w-4 h-4 rounded-full border-2 border-inGray/50 transition-all duration-200"></div>
-        </div>
+      <!-- Keypad Grid -->
+      <div class="w-full max-w-xs mx-auto grid grid-cols-3 gap-4 pb-8">
+        <button onclick="pressDigit('1')" class="h-20 w-20 mx-auto rounded-full bg-slate-900 border border-slate-800 text-2xl font-semibold flex items-center justify-center active:scale-90 active:bg-slate-800 transition-all shadow-md">1</button>
+        <button onclick="pressDigit('2')" class="h-20 w-20 mx-auto rounded-full bg-slate-900 border border-slate-800 text-2xl font-semibold flex items-center justify-center active:scale-90 active:bg-slate-800 transition-all shadow-md">2</button>
+        <button onclick="pressDigit('3')" class="h-20 w-20 mx-auto rounded-full bg-slate-900 border border-slate-800 text-2xl font-semibold flex items-center justify-center active:scale-90 active:bg-slate-800 transition-all shadow-md">3</button>
 
-        <div class="grid grid-cols-3 gap-6 w-full max-w-xs px-2">
-            <button type="button" data-key="1" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">1</button>
-            <button type="button" data-key="2" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">2</button>
-            <button type="button" data-key="3" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">3</button>
-            <button type="button" data-key="4" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">4</button>
-            <button type="button" data-key="5" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">5</button>
-            <button type="button" data-key="6" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">6</button>
-            <button type="button" data-key="7" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">7</button>
-            <button type="button" data-key="8" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">8</button>
-            <button type="button" data-key="9" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">9</button>
-            <div class="w-16 h-16"></div>
-            <button type="button" data-key="0" class="pin-btn w-16 h-16 rounded-full bg-inCard border border-inCardBorder/60 text-2xl font-semibold flex items-center justify-center mx-auto transition">0</button>
-            <button type="button" id="clearPinBtn" class="w-16 h-16 rounded-full text-inGray flex items-center justify-center mx-auto active:text-white transition"><i class="fa-solid fa-delete-left text-2xl"></i></button>
-        </div>
+        <button onclick="pressDigit('4')" class="h-20 w-20 mx-auto rounded-full bg-slate-900 border border-slate-800 text-2xl font-semibold flex items-center justify-center active:scale-90 active:bg-slate-800 transition-all shadow-md">4</button>
+        <button onclick="pressDigit('5')" class="h-20 w-20 mx-auto rounded-full bg-slate-900 border border-slate-800 text-2xl font-semibold flex items-center justify-center active:scale-90 active:bg-slate-800 transition-all shadow-md">5</button>
+        <button onclick="pressDigit('6')" class="h-20 w-20 mx-auto rounded-full bg-slate-900 border border-slate-800 text-2xl font-semibold flex items-center justify-center active:scale-90 active:bg-slate-800 transition-all shadow-md">6</button>
+
+        <button onclick="pressDigit('7')" class="h-20 w-20 mx-auto rounded-full bg-slate-900 border border-slate-800 text-2xl font-semibold flex items-center justify-center active:scale-90 active:bg-slate-800 transition-all shadow-md">7</button>
+        <button onclick="pressDigit('8')" class="h-20 w-20 mx-auto rounded-full bg-slate-900 border border-slate-800 text-2xl font-semibold flex items-center justify-center active:scale-90 active:bg-slate-800 transition-all shadow-md">8</button>
+        <button onclick="pressDigit('9')" class="h-20 w-20 mx-auto rounded-full bg-slate-900 border border-slate-800 text-2xl font-semibold flex items-center justify-center active:scale-90 active:bg-slate-800 transition-all shadow-md">9</button>
+
+        <button onclick="clearPin()" class="h-20 w-20 mx-auto rounded-full bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-400 flex items-center justify-center active:scale-90 active:bg-slate-800 transition-all shadow-md uppercase tracking-wider">Effacer</button>
+        <button onclick="pressDigit('0')" class="h-20 w-20 mx-auto rounded-full bg-slate-900 border border-slate-800 text-2xl font-semibold flex items-center justify-center active:scale-90 active:bg-slate-800 transition-all shadow-md">0</button>
+        <button onclick="validatePin()" class="h-20 w-20 mx-auto rounded-full bg-indigo-600 border border-indigo-500 text-lg font-bold flex items-center justify-center active:scale-90 active:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/30 text-white">OK</button>
+      </div>
     </div>
 
-    <!-- EN-TÊTE -->
-    <header class="shrink-0 bg-inBg/95 backdrop-blur-md border-b border-inCardBorder/40 px-5 pb-3 flex items-center justify-between z-20">
-        <div class="flex items-center space-x-3">
-            <button id="menuSettingsBtn" onclick="switchTab('settings')" class="text-white text-xl p-1">
-                <i class="fa-solid fa-bars"></i>
+    <!-- 2. VAULT MAIN INTERFACE -->
+    <div id="vaultScreen" class="hidden h-full w-full flex-col bg-slate-950">
+      
+      <!-- Top Navigation Bar -->
+      <header class="p-4 pt-6 border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md flex items-center justify-between sticky top-0 z-20">
+        <div class="flex items-center gap-3">
+          <button id="backFolderBtn" onclick="openFolder(null)" class="hidden p-2.5 rounded-xl bg-slate-800/80 text-indigo-400 active:scale-95 transition-all border border-slate-700/50">
+            <i class="fa-solid fa-chevron-left text-sm"></i>
+          </button>
+          <div>
+            <h2 id="currentFolderName" class="font-bold text-lg text-white">Mes Dossiers</h2>
+            <p id="itemCountLabel" class="text-xs text-slate-400">Chargement...</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Selection Toggle (Inside folder view) -->
+          <button id="selectToggleBtn" onclick="toggleSelectMode()" class="hidden p-2.5 rounded-xl bg-slate-800/80 text-slate-300 active:scale-95 transition-all text-xs font-medium px-3 flex items-center gap-2 border border-slate-700/50">
+            <i class="fa-solid fa-check-double"></i>
+            <span>Sélect.</span>
+          </button>
+          
+          <!-- Slideshow Launcher -->
+          <button onclick="openSlideshowModal()" class="p-2.5 rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 active:scale-95 transition-all text-xs font-medium px-3 flex items-center gap-2">
+            <i class="fa-solid fa-play"></i>
+            <span>Diaporama</span>
+          </button>
+
+          <!-- Settings Button -->
+          <button onclick="openSettingsModal()" class="p-2.5 rounded-xl bg-slate-800/80 text-slate-300 active:scale-95 transition-all text-xs border border-slate-700/50">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content Container -->
+      <main class="flex-1 overflow-y-auto custom-scrollbar p-4 relative" id="scrollContainer">
+        
+        <!-- Multi-select Action Bar -->
+        <div id="selectActionBar" class="hidden sticky top-0 z-30 mb-4 p-3 bg-indigo-950/90 border border-indigo-500/40 rounded-2xl backdrop-blur-md flex items-center justify-between shadow-xl">
+          <div class="text-xs font-semibold text-indigo-200">
+            <span id="selectedCount">0</span> sélectionné(s)
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="selectAllItems()" class="text-xs px-3 py-1.5 rounded-lg bg-indigo-900/60 border border-indigo-700/50 text-indigo-200 font-medium active:scale-95">Tout</button>
+            <button onclick="moveSelectedItems()" class="text-xs px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium active:scale-95">Déplacer</button>
+            <button onclick="deleteSelectedItems()" class="text-xs px-3 py-1.5 rounded-lg bg-rose-600 text-white font-medium active:scale-95">Supprimer</button>
+          </div>
+        </div>
+
+        <!-- 1. Folders Grid View (Displayed at Root or Inside Subfolders) -->
+        <div id="foldersSection" class="mb-6">
+          <h3 id="foldersSectionTitle" class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-1">Dossiers Sécurisés</h3>
+          <div id="foldersGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <!-- Dynamic Folder Cards -->
+          </div>
+        </div>
+
+        <!-- 2. Files Grid View (STRICTLY HIDDEN AT ROOT, DISPLAYED ONLY INSIDE FOLDERS) -->
+        <div id="filesSection" class="hidden">
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-1">Photos & Vidéos</h3>
+          <div id="filesGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+            <!-- Dynamic Photos & Videos -->
+          </div>
+        </div>
+
+        <!-- Empty State Notice -->
+        <div id="emptyVaultNotice" class="hidden py-20 flex flex-col items-center justify-center text-center">
+          <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600 text-2xl mb-3">
+            <i class="fa-regular fa-folder-open"></i>
+          </div>
+          <p id="emptyNoticeText" class="text-sm font-medium text-slate-400">Aucun élément disponible</p>
+          <p class="text-xs text-slate-600 mt-1">Utilisez le bouton + pour créer un dossier ou ajouter du contenu</p>
+        </div>
+
+      </main>
+
+      <!-- FAB Action Button -->
+      <div class="fixed bottom-6 right-6 z-40">
+        <button onclick="toggleFabMenu()" class="w-14 h-14 rounded-full bg-indigo-600 text-white shadow-xl shadow-indigo-600/40 flex items-center justify-center text-xl active:scale-90 transition-all border border-indigo-400/30">
+          <i id="fabIcon" class="fa-solid fa-plus transition-transform duration-300"></i>
+        </button>
+        
+        <!-- FAB Submenu -->
+        <div id="fabMenu" class="hidden absolute bottom-16 right-0 mb-2 flex flex-col gap-2 items-end min-w-[210px]">
+          <button onclick="openCreateFolderModal()" class="w-full bg-slate-900 border border-slate-800 text-slate-200 px-4 py-3 rounded-2xl text-xs font-semibold flex items-center justify-between shadow-xl active:scale-95">
+            <span>Nouveau Dossier</span>
+            <i class="fa-solid fa-folder-plus text-indigo-400"></i>
+          </button>
+          <button onclick="triggerFileInput()" class="w-full bg-slate-900 border border-slate-800 text-slate-200 px-4 py-3 rounded-2xl text-xs font-semibold flex items-center justify-between shadow-xl active:scale-95">
+            <span>Importer Photos/Vidéos/ZIP</span>
+            <i class="fa-solid fa-file-arrow-up text-indigo-400"></i>
+          </button>
+        </div>
+      </div>
+
+      <input type="file" id="mediaFileInput" multiple accept="image/*,video/*,.zip" class="hidden" onchange="handleFileImport(event)">
+    </div>
+
+    <!-- 3. MODALS & OVERLAYS -->
+
+    <!-- Batch Progress Overlay -->
+    <div id="progressModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
+        <div class="w-12 h-12 rounded-full border-4 border-indigo-500/30 border-t-indigo-500 animate-spin mb-4"></div>
+        <h3 id="progressTitle" class="text-sm font-bold text-white mb-1">Traitement en cours...</h3>
+        <p id="progressSubtitle" class="text-xs text-slate-400 mb-4">Veuillez patienter...</p>
+        
+        <div class="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
+          <div id="progressBar" class="bg-indigo-600 h-full w-0 transition-all duration-150"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Folder Modal -->
+    <div id="createFolderModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+        <h3 class="text-lg font-bold text-white mb-1">Nouveau dossier</h3>
+        <p class="text-xs text-slate-400 mb-4">Nommez votre dossier confidentiel.</p>
+        <input type="text" id="folderNameInput" placeholder="Ex: Vacances, Documents..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 mb-5">
+        <div class="flex gap-3">
+          <button onclick="closeModal('createFolderModal')" class="flex-1 py-3 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 active:scale-95">Annuler</button>
+          <button onclick="submitCreateFolder()" class="flex-1 py-3 rounded-xl bg-indigo-600 text-xs font-semibold text-white active:scale-95">Créer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Move Items Modal -->
+    <div id="moveItemsModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+        <h3 class="text-lg font-bold text-white mb-1">Déplacer les éléments</h3>
+        <p class="text-xs text-slate-400 mb-4">Sélectionnez le dossier destination.</p>
+        <div id="targetFoldersList" class="max-h-48 overflow-y-auto custom-scrollbar flex flex-col gap-2 mb-5">
+          <!-- Folders inserted dynamically -->
+        </div>
+        <button onclick="closeModal('moveItemsModal')" class="w-full py-3 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 active:scale-95">Annuler</button>
+      </div>
+    </div>
+
+    <!-- Slideshow Modal -->
+    <div id="slideshowModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+        <h3 class="text-lg font-bold text-white mb-1">Diaporama</h3>
+        <p class="text-xs text-slate-400 mb-4">Affiche aléatoirement le contenu des dossiers choisis.</p>
+        
+        <div class="space-y-4 mb-6">
+          <div>
+            <label class="text-xs text-slate-300 font-medium block mb-1">Dossiers inclus :</label>
+            <div id="slideshowFoldersList" class="max-h-32 overflow-y-auto custom-scrollbar bg-slate-950 p-2 border border-slate-800 rounded-xl space-y-1">
+              <!-- Checkboxes inserted dynamically -->
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs text-slate-300 mb-1">
+              <span>Durée d'affichage photo :</span>
+              <span id="photoDurationVal" class="font-bold text-indigo-400">5s</span>
+            </div>
+            <input type="range" id="photoDurationSlider" min="2" max="30" value="5" class="w-full accent-indigo-500" oninput="document.getElementById('photoDurationVal').innerText = this.value + 's'">
+          </div>
+
+          <div class="flex items-center justify-between bg-slate-950 p-3 border border-slate-800 rounded-xl">
+            <span class="text-xs text-slate-300 font-medium">Lire vidéos entièrement</span>
+            <input type="checkbox" id="fullVideoToggle" checked class="w-4 h-4 accent-indigo-600">
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="closeModal('slideshowModal')" class="flex-1 py-3 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 active:scale-95">Annuler</button>
+          <button onclick="startSlideshow()" class="flex-1 py-3 rounded-xl bg-indigo-600 text-xs font-semibold text-white active:scale-95">Lancer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+        <h3 class="text-lg font-bold text-white mb-4">Paramètres</h3>
+        
+        <div class="space-y-4 mb-6">
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Modifier le Code PIN</label>
+            <div class="flex gap-2">
+              <input type="password" id="newPinInput" maxlength="4" placeholder="Nouveau PIN" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <button onclick="updatePin()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold active:scale-95">Modifier</button>
+            </div>
+          </div>
+
+          <hr class="border-slate-800">
+
+          <div class="space-y-2">
+            <button onclick="exportBackupZip()" class="w-full py-2.5 px-3 bg-slate-800 border border-slate-700/50 rounded-xl text-xs font-medium text-slate-200 flex items-center justify-between active:scale-95">
+              <span>Exporter sauvegarde complète (ZIP)</span>
+              <i class="fa-solid fa-file-export text-slate-400"></i>
             </button>
-            <h1 id="headerTitle" class="text-2xl font-black tracking-tight italic">InCalc</h1>
-        </div>
-        <div class="flex items-center space-x-3">
-            <span class="bg-gradient-to-r from-blue-500 to-fuchsia-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md tracking-wider">PRO</span>
-        </div>
-    </header>
-
-    <!-- CONTENU PRINCIPAL -->
-    <main class="flex-1 px-4 pt-3 pb-6 overflow-y-auto overflow-x-hidden hide-scrollbar relative">
-
-        <!-- TAB 1: ALBUMS -->
-        <section id="tabFolders" class="tab-content space-y-4">
-            <div id="foldersGrid" class="grid grid-cols-2 gap-3.5"></div>
-
-            <!-- Vue Intérieur d'un Dossier -->
-            <div id="folderDetailView" class="hidden space-y-4">
-                <div class="flex items-center justify-between bg-inCard p-3 rounded-2xl border border-inCardBorder">
-                    <button onclick="closeFolderDetail()" class="text-inPurple flex items-center space-x-1 font-bold text-sm">
-                        <i class="fa-solid fa-chevron-left"></i>
-                        <span>Retour</span>
-                    </button>
-                    <h2 id="currentFolderName" class="font-bold text-base truncate max-w-[120px]">Album</h2>
-                    <button onclick="deleteCurrentFolder()" class="text-inRed text-sm px-2 py-1 rounded-lg">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </button>
-                </div>
-
-                <!-- ASTUCE SELECTION PAR APPUI LONG -->
-                <div id="longPressHint" class="text-center text-[11px] text-inGray bg-inCard/50 py-1.5 px-3 rounded-xl border border-inCardBorder/40">
-                    💡 <b>Appui long</b> sur une photo ou vidéo pour la sélectionner
-                </div>
-
-                <!-- Barre d'actions mode sélection -->
-                <div id="selectionActionBar" class="hidden bg-inCard p-3 rounded-2xl border border-inCardBorder flex items-center justify-between">
-                    <button onclick="toggleSelectAllMedia()" id="selectAllMediaBtn" class="text-xs text-inPurple font-bold">Tout sélectionner</button>
-                    <div class="flex items-center space-x-2">
-                        <button onclick="openMoveModalMultiple()" class="text-xs bg-inPurple/20 text-inPurple px-3 py-1.5 rounded-xl font-bold">Déplacer (<span id="selectedCount">0</span>)</button>
-                        <button onclick="deleteSelectedMedia()" class="text-xs bg-inRed/20 text-inRed px-3 py-1.5 rounded-xl font-bold">Supprimer</button>
-                        <button onclick="exitSelectMode()" class="text-xs bg-inGray/20 text-inGray px-2.5 py-1.5 rounded-xl font-bold">✕</button>
-                    </div>
-                </div>
-
-                <div id="mediaGrid" class="grid grid-cols-2 gap-3"></div>
-            </div>
-        </section>
-
-        <!-- TAB 2: DIAPORAMA ALÉATOIRE -->
-        <section id="tabSlideshow" class="tab-content hidden space-y-4">
-            <div class="bg-inCard p-4 rounded-2xl border border-inCardBorder space-y-4">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-bold">Sélectionner les albums</span>
-                    <button onclick="toggleSelectAllFolders()" id="selectAllBtn" class="text-xs text-inPurple font-bold">Tout sélectionner</button>
-                </div>
-
-                <div id="slideshowFolderList" class="space-y-2 max-h-48 overflow-y-auto pr-1 hide-scrollbar"></div>
-
-                <div class="pt-2 border-t border-inCardBorder space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-inGray">Durée des photos</span>
-                        <select id="slideshowTimerSelect" class="bg-inBg border border-inCardBorder rounded-xl px-3 py-1.5 text-sm text-inPurple font-bold outline-none">
-                            <option value="2">2 s</option>
-                            <option value="3" selected>3 s</option>
-                            <option value="5">5 s</option>
-                            <option value="10">10 s</option>
-                        </select>
-                    </div>
-
-                    <!-- OPTION LECTURE VIDÉO ENTIÈRE OU TEMPS PHOTO -->
-                    <div class="space-y-1.5 pt-1">
-                        <label class="text-xs font-bold text-inGray block">Mode de lecture des vidéos :</label>
-                        <div class="grid grid-cols-1 gap-2">
-                            <label class="flex items-center justify-between p-2.5 bg-inBg rounded-xl border border-inCardBorder text-xs cursor-pointer">
-                                <div>
-                                    <div class="font-bold text-white">Lecture entière</div>
-                                    <div class="text-[10px] text-inGray">Joue la vidéo jusqu'à la fin</div>
-                                </div>
-                                <input type="radio" name="videoMode" value="full" checked class="w-4 h-4 accent-inPurple">
-                            </label>
-                            <label class="flex items-center justify-between p-2.5 bg-inBg rounded-xl border border-inCardBorder text-xs cursor-pointer">
-                                <div>
-                                    <div class="font-bold text-white">Même durée que les photos</div>
-                                    <div class="text-[10px] text-inGray">Coupe la vidéo selon le minuteur</div>
-                                </div>
-                                <input type="radio" name="videoMode" value="timer" class="w-4 h-4 accent-inPurple">
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="startSlideshow()" class="w-full py-3.5 bg-inPurple font-bold text-white rounded-xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-2 mt-2">
-                    <i class="fa-solid fa-play text-sm"></i>
-                    <span>Lancer le Diaporama Aléatoire</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- TAB 3: RÉGLAGES -->
-        <section id="tabSettings" class="tab-content hidden space-y-5">
-            <div class="bg-gradient-to-br from-inCard to-purple-950/40 p-5 rounded-2xl border border-inCardBorder space-y-3">
-                <div class="flex items-center space-x-2">
-                    <span class="font-black text-lg">InCalc</span>
-                    <span class="bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md">PRO</span>
-                </div>
-                <p class="text-xs font-semibold text-gray-300 leading-relaxed">Accédez à toutes les fonctionnalités premium, supprimez toutes les annonces.</p>
-                <button class="w-full py-3 bg-gradient-to-r from-blue-600 to-fuchsia-600 font-bold text-white text-sm rounded-full shadow-lg">Passer à Pro</button>
-            </div>
-
-            <div class="space-y-2">
-                <div class="text-xs font-bold text-inGray uppercase tracking-wider px-1">GÉNÉRAL</div>
-                <div class="bg-inCard rounded-2xl border border-inCardBorder divide-y divide-inCardBorder/60 overflow-hidden">
-                    <div class="p-3.5 flex items-center justify-between">
-                        <div class="flex items-center space-x-3"><i class="fa-solid fa-lock text-inPurple text-sm"></i><span class="text-sm font-semibold">Code</span></div>
-                        <input type="checkbox" checked class="w-5 h-5 accent-inPurple rounded-full">
-                    </div>
-                    <div onclick="changePinModal()" class="p-3.5 flex items-center justify-between cursor-pointer">
-                        <div class="flex items-center space-x-3"><i class="fa-solid fa-rotate text-inGray text-sm"></i><span class="text-sm font-semibold">Changer le code</span></div>
-                        <i class="fa-solid fa-chevron-right text-xs text-inGray"></i>
-                    </div>
-                    <div class="p-3.5 flex items-center justify-between">
-                        <div class="flex items-center space-x-3"><i class="fa-solid fa-file-export text-inPurple text-sm"></i><span class="text-sm font-semibold">Exporter Sauvegarde (ZIP)</span></div>
-                        <button onclick="exportAllToZIP()" class="text-xs bg-inPurple/20 text-inPurple font-bold px-3 py-1 rounded-lg">Exporter</button>
-                    </div>
-                    <div class="p-3.5 flex items-center justify-between">
-                        <div class="flex items-center space-x-3"><i class="fa-solid fa-file-import text-inPurple text-sm"></i><span class="text-sm font-semibold">Importer Fichiers (ZIP)</span></div>
-                        <label class="text-xs bg-inPurple/20 text-inPurple font-bold px-3 py-1 rounded-lg cursor-pointer">
-                            Importer
-                            <input type="file" id="importZipInput" accept=".zip" class="hidden" onchange="importZIPFile(event)">
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="space-y-2">
-                <div class="text-xs font-bold text-inGray uppercase tracking-wider px-1">DONNÉES & STOCKAGE</div>
-                <div class="bg-inCard rounded-2xl border border-inCardBorder divide-y divide-inCardBorder/60 overflow-hidden">
-                    <div class="p-3.5 flex items-center justify-between">
-                        <div class="flex items-center space-x-3"><i class="fa-solid fa-database text-inGray text-sm"></i><span class="text-sm font-semibold">Espace mémoire utilisé</span></div>
-                        <span id="storageUsage" class="text-xs text-inGray font-bold">Calcul...</span>
-                    </div>
-                    <div onclick="clearAllData()" class="p-3.5 flex items-center justify-between cursor-pointer">
-                        <div class="flex items-center space-x-3"><i class="fa-regular fa-trash-can text-inRed text-sm"></i><span class="text-sm font-semibold text-inRed">Vider tout le coffre</span></div>
-                        <i class="fa-solid fa-chevron-right text-xs text-inRed"></i>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- BOUTON FLOTTANT -->
-        <div id="fabContainer" class="fixed bottom-20 right-5 z-30 flex flex-col items-end space-y-3">
-            <div id="fabMenu" class="hidden flex flex-col items-end space-y-3">
-                <button onclick="openCreateFolderModal()" class="w-12 h-12 rounded-full bg-amber-400 text-black shadow-xl flex items-center justify-center active:scale-90 transition">
-                    <i class="fa-solid fa-folder-plus text-base"></i>
-                </button>
-                <label class="w-12 h-12 rounded-full bg-purple-300 text-purple-900 shadow-xl flex items-center justify-center active:scale-90 transition cursor-pointer">
-                    <i class="fa-solid fa-image text-base"></i>
-                    <input type="file" id="fabFileInput" multiple accept="image/*,video/*" class="hidden" onchange="handleFabUpload(event)">
-                </label>
-            </div>
-            <button onclick="toggleFabMenu()" id="fabMainBtn" class="w-14 h-14 rounded-full bg-inPurple text-white shadow-2xl flex items-center justify-center active:scale-90 transition text-2xl">
-                <i class="fa-solid fa-plus"></i>
+            <button onclick="triggerZipImport()" class="w-full py-2.5 px-3 bg-slate-800 border border-slate-700/50 rounded-xl text-xs font-medium text-slate-200 flex items-center justify-between active:scale-95">
+              <span>Importer sauvegarde (ZIP)</span>
+              <i class="fa-solid fa-file-import text-slate-400"></i>
             </button>
-        </div>
-    </main>
-
-    <!-- BARRE DE NAVIGATION INFÉRIEURE -->
-    <nav class="shrink-0 bg-inBg/95 backdrop-blur-md border-t border-inCardBorder/60 px-8 pt-2.5 flex justify-around items-center z-20">
-        <button onclick="switchTab('folders')" id="nav-folders" class="nav-item flex flex-col items-center space-y-1 text-inPurple">
-            <i class="fa-solid fa-folder text-lg"></i>
-            <span class="text-[10px] font-bold">Albums</span>
-        </button>
-        <button onclick="switchTab('slideshow')" id="nav-slideshow" class="nav-item flex flex-col items-center space-y-1 text-inGray">
-            <i class="fa-solid fa-shuffle text-lg"></i>
-            <span class="text-[10px] font-bold">Aléatoire</span>
-        </button>
-        <button onclick="switchTab('settings')" id="nav-settings" class="nav-item flex flex-col items-center space-y-1 text-inGray">
-            <i class="fa-solid fa-gear text-lg"></i>
-            <span class="text-[10px] font-bold">Réglages</span>
-        </button>
-    </nav>
-
-    <!-- VISIONNEUSE DE MÉDIAS -->
-    <div id="mediaViewerModal" class="fixed inset-0 z-50 bg-black hidden flex flex-col items-center justify-between p-4 touch-none">
-        <div class="w-full flex items-center justify-between z-10 pt-safe px-2">
-            <button onclick="closeMediaViewer()" class="text-white text-xl p-2"><i class="fa-solid fa-chevron-left"></i></button>
-            <span id="viewerCounter" class="text-xs text-inGray font-bold">1 / 1</span>
-            <button onclick="deleteViewerMedia()" class="text-inRed text-sm p-2"><i class="fa-regular fa-trash-can"></i></button>
+            <input type="file" id="zipFileInput" accept=".zip" class="hidden" onchange="importBackupZip(event)">
+          </div>
         </div>
 
-        <div id="viewerContent" class="w-full flex-1 flex items-center justify-center p-2 my-auto overflow-hidden"></div>
-
-        <div class="w-full border-t border-inCardBorder/60 pt-3 pb-safe px-6 flex justify-around items-center z-10 bg-inBg/90 backdrop-blur-md">
-            <button onclick="navigateViewer(-1)" class="flex flex-col items-center text-inGray active:text-white"><i class="fa-solid fa-chevron-left text-sm"></i><span class="text-[9px] mt-1">Préc.</span></button>
-            <button onclick="openMoveModalSingle()" class="flex flex-col items-center text-inGray active:text-white"><i class="fa-solid fa-right-to-bracket text-sm"></i><span class="text-[9px] mt-1">Déplacer</span></button>
-            <button onclick="deleteViewerMedia()" class="flex flex-col items-center text-inRed"><i class="fa-regular fa-trash-can text-sm"></i><span class="text-[9px] mt-1">Supprimer</span></button>
-            <button onclick="navigateViewer(1)" class="flex flex-col items-center text-inGray active:text-white"><i class="fa-solid fa-chevron-right text-sm"></i><span class="text-[9px] mt-1">Suiv.</span></button>
-        </div>
+        <button onclick="closeModal('settingsModal')" class="w-full py-3 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 active:scale-95">Fermer</button>
+      </div>
     </div>
 
-    <!-- MODAL DE DÉPLACEMENT DE DOSSIER DE DESTINATION -->
-    <div id="moveMediaModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-inCard border border-inCardBorder w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl">
-            <h3 class="font-bold text-base text-white">Choisir l'album de destination</h3>
-            <div id="targetFolderList" class="space-y-2 max-h-48 overflow-y-auto hide-scrollbar"></div>
-            <div class="flex justify-end space-x-2 pt-2 border-t border-inCardBorder">
-                <button onclick="closeMoveModal()" class="px-4 py-2 text-xs text-inGray font-bold">Annuler</button>
+    <!-- Media Viewer Modal -->
+    <div id="mediaViewerModal" class="hidden fixed inset-0 z-50 bg-black flex flex-col justify-between">
+      <div class="absolute top-4 right-4 z-50">
+        <button onclick="closeMediaViewer()" class="w-10 h-10 rounded-full bg-slate-900/80 text-white border border-slate-700 flex items-center justify-center active:scale-95">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="viewerContainer" class="w-full h-full flex items-center justify-center p-2">
+        <!-- Media element inserted dynamically -->
+      </div>
+    </div>
+
+    <!-- Slideshow Fullscreen Viewer -->
+    <div id="slideshowViewer" class="hidden fixed inset-0 z-50 bg-black flex items-center justify-center select-none" ondblclick="nextSlideshowItem()">
+      <button onclick="stopSlideshow()" class="absolute top-6 right-6 z-50 w-10 h-10 rounded-full bg-slate-900/60 text-white/80 border border-slate-700/50 flex items-center justify-center active:scale-95">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div id="slideshowContent" class="w-full h-full flex items-center justify-center p-2">
+        <!-- Slideshow current item -->
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-slate-100 border border-slate-700 text-xs font-semibold px-4 py-2.5 rounded-full shadow-2xl opacity-0 pointer-events-none transition-all duration-300">
+      Notification
+    </div>
+
+  </div>
+
+  <script>
+    /* Global Application State */
+    let appState = {
+      pin: localStorage.getItem('calculathor_pin') || '0507',
+      enteredPin: '',
+      currentFolderId: null, // null = Root level (folders list only)
+      isSelectMode: false,
+      selectedItems: new Set(),
+      currentFolderMediaKeys: [],
+      objectUrlMap: new Map(),
+      folders: [],
+      db: null
+    };
+
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'svg'];
+    const videoExtensions = ['mp4', 'mkv', 'm4v', 'avi', 'mov', 'webm'];
+
+    function getMimeType(fileName) {
+      const ext = fileName.split('.').pop().toLowerCase();
+      if (imageExtensions.includes(ext)) {
+        return ext === 'svg' ? 'image/svg+xml' : `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+      }
+      if (videoExtensions.includes(ext)) {
+        return `video/${ext === 'mov' ? 'quicktime' : (ext === 'mkv' || ext === 'm4v' || ext === 'avi' ? 'mp4' : ext)}`;
+      }
+      return 'application/octet-stream';
+    }
+
+    function clearObjectUrls() {
+      appState.objectUrlMap.forEach(url => URL.revokeObjectURL(url));
+      appState.objectUrlMap.clear();
+    }
+
+    /* IndexedDB Setup */
+    function initDatabase() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open('CalculathorDB', 2);
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('media')) {
+            const store = db.createObjectStore('media', { keyPath: 'id' });
+            store.createIndex('folderId', 'folderId', { unique: false });
+          }
+        };
+        request.onsuccess = (e) => {
+          appState.db = e.target.result;
+          resolve();
+        };
+        request.onerror = (e) => reject(e);
+      });
+    }
+
+    function saveMediaToDB(mediaItem) {
+      return new Promise((resolve, reject) => {
+        const tx = appState.db.transaction('media', 'readwrite');
+        const store = tx.objectStore('media');
+        store.put(mediaItem);
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e);
+      });
+    }
+
+    function getMediaMetadataInFolder(folderId) {
+      return new Promise((resolve, reject) => {
+        if (!folderId) return resolve([]); // Root never queries or displays raw files
+        const tx = appState.db.transaction('media', 'readonly');
+        const store = tx.objectStore('media');
+        const index = store.index('folderId');
+        const request = index.openCursor(IDBKeyRange.only(folderId));
+        const items = [];
+
+        request.onsuccess = (e) => {
+          const cursor = e.target.result;
+          if (cursor) {
+            const { id, folderId, name, type, createdAt, blob } = cursor.value;
+            items.push({ id, folderId, name, type, createdAt, blob });
+            cursor.continue();
+          } else {
+            resolve(items);
+          }
+        };
+        request.onerror = (e) => reject(e);
+      });
+    }
+
+    function countMediaInFolder(folderId) {
+      return new Promise((resolve) => {
+        const tx = appState.db.transaction('media', 'readonly');
+        const store = tx.objectStore('media');
+        const index = store.index('folderId');
+        const request = index.count(IDBKeyRange.only(folderId));
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => resolve(0);
+      });
+    }
+
+    function getMediaItemBlob(id) {
+      return new Promise((resolve, reject) => {
+        const tx = appState.db.transaction('media', 'readonly');
+        const store = tx.objectStore('media');
+        const request = store.get(id);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = (e) => reject(e);
+      });
+    }
+
+    function deleteMediaFromDB(id) {
+      return new Promise((resolve, reject) => {
+        const tx = appState.db.transaction('media', 'readwrite');
+        const store = tx.objectStore('media');
+        store.delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e);
+      });
+    }
+
+    /* Folder Storage & Management */
+    function loadFolders() {
+      const saved = localStorage.getItem('calculathor_folders');
+      if (saved) {
+        appState.folders = JSON.parse(saved);
+      } else {
+        appState.folders = [
+          { id: 'f_default', name: 'Galerie Principale', parentId: null }
+        ];
+        saveFolders();
+      }
+    }
+
+    function saveFolders() {
+      localStorage.setItem('calculathor_folders', JSON.stringify(appState.folders));
+    }
+
+    /* Keypad Auth Logic */
+    function pressDigit(digit) {
+      if (appState.enteredPin.length < 4) {
+        appState.enteredPin += digit;
+        updatePinDisplay();
+        if (appState.enteredPin.length === 4) {
+          setTimeout(validatePin, 150);
+        }
+      }
+    }
+
+    function clearPin() {
+      appState.enteredPin = '';
+      updatePinDisplay();
+    }
+
+    function updatePinDisplay() {
+      const dots = document.querySelectorAll('#pinDots div');
+      dots.forEach((dot, idx) => {
+        if (idx < appState.enteredPin.length) {
+          dot.className = 'w-4 h-4 rounded-full bg-indigo-500 border-2 border-indigo-400 shadow-md shadow-indigo-500/50 scale-110 transition-all duration-200';
+        } else {
+          dot.className = 'w-4 h-4 rounded-full border-2 border-slate-700 transition-all duration-200';
+        }
+      });
+    }
+
+    function validatePin() {
+      if (appState.enteredPin === appState.pin) {
+        document.getElementById('lockScreen').classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          document.getElementById('lockScreen').style.display = 'none';
+          document.getElementById('vaultScreen').classList.remove('hidden');
+          document.getElementById('vaultScreen').classList.add('flex');
+          renderVault();
+        }, 300);
+      } else {
+        showToast('Code PIN incorrect');
+        const dotsContainer = document.getElementById('pinDots');
+        dotsContainer.classList.add('animate-bounce');
+        setTimeout(() => dotsContainer.classList.remove('animate-bounce'), 500);
+        clearPin();
+      }
+    }
+
+    /* Render Vault with Strict Folder Isolation */
+    async function renderVault() {
+      clearObjectUrls();
+      loadFolders();
+      
+      const isRoot = (appState.currentFolderId === null);
+      const currentFolder = appState.folders.find(f => f.id === appState.currentFolderId);
+      
+      // Update Title & Header Navigation
+      document.getElementById('currentFolderName').innerText = isRoot ? 'Mes Dossiers' : currentFolder.name;
+      document.getElementById('backFolderBtn').style.display = isRoot ? 'none' : 'block';
+      document.getElementById('selectToggleBtn').style.display = isRoot ? 'none' : 'flex';
+
+      // Exit selection mode if returning to root
+      if (isRoot && appState.isSelectMode) {
+        toggleSelectMode();
+      }
+
+      // 1. RENDER FOLDERS SECTION
+      const subFolders = appState.folders.filter(f => f.parentId === appState.currentFolderId);
+      const foldersGrid = document.getElementById('foldersGrid');
+      foldersGrid.innerHTML = '';
+
+      if (subFolders.length === 0) {
+        document.getElementById('foldersSection').style.display = 'none';
+      } else {
+        document.getElementById('foldersSection').style.display = 'block';
+        for (let folder of subFolders) {
+          const itemCount = await countMediaInFolder(folder.id);
+          const card = document.createElement('div');
+          card.className = 'bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-4 flex flex-col justify-between cursor-pointer active:scale-95 transition-all shadow-lg group relative';
+          card.onclick = () => openFolder(folder.id);
+          
+          const isDefault = (folder.id === 'f_default');
+          card.innerHTML = `
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl bg-indigo-600/15 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
+                <i class="fa-solid fa-folder"></i>
+              </div>
+              ${!isDefault ? `
+                <button onclick="event.stopPropagation(); deleteFolder('${folder.id}')" class="text-slate-600 hover:text-rose-400 p-2 rounded-lg transition-colors">
+                  <i class="fa-solid fa-trash text-xs"></i>
+                </button>
+              ` : ''}
             </div>
-        </div>
-    </div>
-
-    <!-- OVERLAY DIAPORAMA -->
-    <div id="slideshowOverlay" class="fixed inset-0 z-50 bg-black hidden flex items-center justify-center">
-        <button onclick="stopSlideshow()" class="absolute left-6 z-50 w-11 h-11 rounded-full bg-black/60 border border-white/20 text-white/90 backdrop-blur-md flex items-center justify-center active:scale-90 transition" style="top: 35%;">
-            <i class="fa-solid fa-xmark text-xl"></i>
-        </button>
-        <div id="slideshowMediaContainer" class="w-full h-full flex items-center justify-center p-0"></div>
-    </div>
-
-    <script>
-        let currentPin = "0507";
-        let enteredPin = "";
-        let db = null;
-        let currentFolderId = null;
-        let slideshowInterval = null;
-        let activeSlideshowQueue = [];
-        let activeSlideshowIndex = 0;
-        let currentFolderMediaList = [];
-        let currentViewerIndex = 0;
-        let isSelectMode = false;
-        let selectedMediaIds = new Set();
-        let lastTapTime = 0;
-        let videoThumbnailCache = new Map();
-
-        // DÉTECTION EXTENSION FORMATS VIDÉOS (APPLE MOV, M4V, MP4...)
-        function isVideoFile(fileName, mimeType) {
-            if (mimeType && mimeType.startsWith('video/')) return true;
-            if (!fileName) return false;
-            return /\.(mp4|mov|m4v|webm|m4a|3gp|avi|mkv)$/i.test(fileName);
+            <div>
+              <span class="text-xs font-bold text-slate-100 truncate block">${folder.name}</span>
+              <span class="text-[10px] font-medium text-slate-500">${itemCount} fichier(s)</span>
+            </div>
+          `;
+          foldersGrid.appendChild(card);
         }
+      }
 
-        // GÉNÉRATEUR AUTOMATIQUE DE VIGNETTES VIDÉO DYNAMIQUES AVEC CANVAS
-        function generateVideoThumbnail(blob) {
-            return new Promise((resolve) => {
-                const url = URL.createObjectURL(blob);
-                const video = document.createElement('video');
-                video.src = url;
-                video.muted = true;
-                video.playsInline = true;
-                video.setAttribute('webkit-playsinline', 'true');
-                video.currentTime = 0.5;
+      // 2. RENDER FILES SECTION (STRICTLY HIDDEN AT ROOT)
+      const filesSection = document.getElementById('filesSection');
+      const filesGrid = document.getElementById('filesGrid');
+      filesGrid.innerHTML = '';
 
-                const cleanup = () => {
-                    URL.revokeObjectURL(url);
-                    video.remove();
-                };
+      let mediaItems = [];
+      if (!isRoot) {
+        filesSection.classList.remove('hidden');
+        mediaItems = await getMediaMetadataInFolder(appState.currentFolderId);
+        appState.currentFolderMediaKeys = mediaItems.map(m => m.id);
 
-                video.onloadeddata = () => {
-                    video.currentTime = Math.min(1.0, video.duration / 2 || 0.5);
-                };
+        mediaItems.forEach(item => {
+          let objectUrl = '';
+          if (item.blob) {
+            objectUrl = URL.createObjectURL(item.blob);
+            appState.objectUrlMap.set(item.id, objectUrl);
+          }
 
-                video.onseeked = () => {
-                    try {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = 300;
-                        canvas.height = 300;
-                        const ctx = canvas.getContext('2d');
-                        
-                        // Crop & Center Fill
-                        const scale = Math.max(canvas.width / video.videoWidth, canvas.height / video.videoHeight);
-                        const x = (canvas.width / 2) - (video.videoWidth / 2) * scale;
-                        const y = (canvas.height / 2) - (video.videoHeight / 2) * scale;
-                        
-                        ctx.drawImage(video, x, y, video.videoWidth * scale, video.videoHeight * scale);
-                        const thumbUrl = canvas.toDataURL('image/jpeg', 0.7);
-                        cleanup();
-                        resolve(thumbUrl);
-                    } catch (e) {
-                        cleanup();
-                        resolve(null);
-                    }
-                };
+          const card = document.createElement('div');
+          const isSelected = appState.selectedItems.has(item.id);
+          
+          card.id = `media-card-${item.id}`;
+          card.className = `media-card relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-slate-800/80 cursor-pointer transition-transform duration-100 ${isSelected ? 'is-selected' : ''}`;
 
-                video.onerror = () => {
-                    cleanup();
-                    resolve(null);
-                };
+          // Touch Scroll / Selection Guard
+          let startX = 0, startY = 0, isScrolling = false, pressTimer = null;
 
-                // Safety timeout for iOS Safari
-                setTimeout(() => {
-                    cleanup();
-                    resolve(null);
-                }, 2500);
+          card.addEventListener('touchstart', (e) => {
+            isScrolling = false;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            
+            pressTimer = setTimeout(() => {
+              if (!isScrolling) {
+                if (!appState.isSelectMode) toggleSelectMode();
+                toggleSelectItem(item.id);
+              }
+            }, 450);
+          }, { passive: true });
 
-                video.load();
-            });
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const keys = document.querySelectorAll(".pin-btn");
-            keys.forEach(key => {
-                const handlePress = (e) => {
-                    e.preventDefault();
-                    const digit = key.getAttribute("data-key");
-                    if (digit) enterPin(digit);
-                };
-                key.addEventListener("touchstart", handlePress, { passive: false });
-                key.addEventListener("click", handlePress);
-            });
-
-            const clearBtn = document.getElementById("clearPinBtn");
-            if (clearBtn) {
-                const handleClear = (e) => {
-                    e.preventDefault();
-                    clearPin();
-                };
-                clearBtn.addEventListener("touchstart", handleClear, { passive: false });
-                clearBtn.addEventListener("click", handleClear);
+          card.addEventListener('touchmove', (e) => {
+            const moveX = Math.abs(e.touches[0].clientX - startX);
+            const moveY = Math.abs(e.touches[0].clientY - startY);
+            if (moveX > 8 || moveY > 8) {
+              isScrolling = true;
+              clearTimeout(pressTimer);
             }
+          }, { passive: true });
 
-            const slideshowContainer = document.getElementById("slideshowOverlay");
-            slideshowContainer.addEventListener("click", (e) => {
-                if (e.target.closest("button")) return;
-                const now = new Date().getTime();
-                if (now - lastTapTime < 300) {
-                    nextSlide();
-                }
-                lastTapTime = now;
-            });
+          card.addEventListener('touchend', () => clearTimeout(pressTimer));
 
-            initDB();
+          card.onclick = () => {
+            if (appState.isSelectMode) {
+              toggleSelectItem(item.id);
+            } else {
+              openMediaViewer(item.id);
+            }
+          };
+
+          const isVideo = item.type.startsWith('video');
+          card.innerHTML = `
+            ${isVideo ? 
+              `<video src="${objectUrl}" class="w-full h-full object-cover pointer-events-none" preload="metadata"></video>
+               <div class="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
+                 <i class="fa-solid fa-circle-play text-white/80 text-lg"></i>
+               </div>` : 
+              `<img src="${objectUrl}" class="w-full h-full object-cover pointer-events-none" loading="lazy">`
+            }
+            <div class="select-badge absolute top-2 right-2 w-5 h-5 rounded-full border-2 border-white/80 bg-black/40 flex items-center justify-center transition-all">
+              <i class="select-icon fa-solid fa-check text-[10px] text-white ${isSelected ? 'opacity-100' : 'opacity-0'}"></i>
+            </div>
+          `;
+          filesGrid.appendChild(card);
+        });
+      } else {
+        filesSection.classList.add('hidden');
+      }
+
+      // Update Subtitle Stats & Empty States
+      if (isRoot) {
+        document.getElementById('itemCountLabel').innerText = `${subFolders.length} dossier(s)`;
+        document.getElementById('emptyVaultNotice').style.display = (subFolders.length === 0) ? 'flex' : 'none';
+        document.getElementById('emptyNoticeText').innerText = "Aucun dossier créé";
+      } else {
+        document.getElementById('itemCountLabel').innerText = `${mediaItems.length} photo(s) / vidéo(s)`;
+        document.getElementById('emptyVaultNotice').style.display = (mediaItems.length === 0) ? 'flex' : 'none';
+        document.getElementById('emptyNoticeText').innerText = "Ce dossier est vide";
+      }
+    }
+
+    function openFolder(folderId) {
+      appState.currentFolderId = folderId;
+      appState.selectedItems.clear();
+      renderVault();
+    }
+
+    /* Fast Class-Based Selection Toggle */
+    function toggleSelectMode() {
+      appState.isSelectMode = !appState.isSelectMode;
+      appState.selectedItems.clear();
+      
+      document.getElementById('selectActionBar').style.display = appState.isSelectMode ? 'flex' : 'none';
+      document.getElementById('selectToggleBtn').classList.toggle('bg-indigo-600', appState.isSelectMode);
+      document.getElementById('selectToggleBtn').classList.toggle('text-white', appState.isSelectMode);
+
+      document.querySelectorAll('.media-card').forEach(card => {
+        card.classList.remove('is-selected');
+        const icon = card.querySelector('.select-icon');
+        if (icon) icon.classList.add('opacity-0');
+      });
+      document.getElementById('selectedCount').innerText = '0';
+    }
+
+    function toggleSelectItem(id) {
+      const card = document.getElementById(`media-card-${id}`);
+      if (appState.selectedItems.has(id)) {
+        appState.selectedItems.delete(id);
+        if (card) {
+          card.classList.remove('is-selected');
+          const icon = card.querySelector('.select-icon');
+          if (icon) icon.classList.add('opacity-0');
+        }
+      } else {
+        appState.selectedItems.add(id);
+        if (card) {
+          card.classList.add('is-selected');
+          const icon = card.querySelector('.select-icon');
+          if (icon) icon.classList.remove('opacity-0');
+        }
+      }
+      document.getElementById('selectedCount').innerText = appState.selectedItems.size;
+    }
+
+    function selectAllItems() {
+      appState.currentFolderMediaKeys.forEach(id => {
+        appState.selectedItems.add(id);
+        const card = document.getElementById(`media-card-${id}`);
+        if (card) {
+          card.classList.add('is-selected');
+          const icon = card.querySelector('.select-icon');
+          if (icon) icon.classList.remove('opacity-0');
+        }
+      });
+      document.getElementById('selectedCount').innerText = appState.selectedItems.size;
+    }
+
+    /* Async Progress-Tracked Batch Actions */
+    async function deleteSelectedItems() {
+      if (appState.selectedItems.size === 0) return;
+      
+      const itemsToDelete = Array.from(appState.selectedItems);
+      showProgressModal('Suppression...', '0 / ' + itemsToDelete.length);
+
+      let completed = 0;
+      for (let id of itemsToDelete) {
+        await deleteMediaFromDB(id);
+        completed++;
+        updateProgressModal((completed / itemsToDelete.length) * 100, `${completed} / ${itemsToDelete.length}`);
+      }
+
+      hideProgressModal();
+      showToast(`${completed} élément(s) supprimé(s)`);
+      appState.selectedItems.clear();
+      if (appState.isSelectMode) toggleSelectMode();
+      renderVault();
+    }
+
+    function moveSelectedItems() {
+      if (appState.selectedItems.size === 0) return;
+      const targetList = document.getElementById('targetFoldersList');
+      targetList.innerHTML = '';
+      
+      appState.folders.forEach(f => {
+        if (f.id !== appState.currentFolderId) {
+          targetList.innerHTML += `
+            <div onclick="executeMove('${f.id}')" class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold text-slate-200 cursor-pointer hover:border-indigo-500">
+              📁 ${f.name}
+            </div>
+          `;
+        }
+      });
+      openModal('moveItemsModal');
+    }
+
+    async function executeMove(targetFolderId) {
+      closeModal('moveItemsModal');
+      const itemsToMove = Array.from(appState.selectedItems);
+      showProgressModal('Déplacement...', '0 / ' + itemsToMove.length);
+
+      let completed = 0;
+      for (let id of itemsToMove) {
+        const item = await getMediaItemBlob(id);
+        if (item) {
+          item.folderId = targetFolderId;
+          await saveMediaToDB(item);
+        }
+        completed++;
+        updateProgressModal((completed / itemsToMove.length) * 100, `${completed} / ${itemsToMove.length}`);
+      }
+
+      hideProgressModal();
+      showToast(`${completed} élément(s) déplacé(s)`);
+      appState.selectedItems.clear();
+      if (appState.isSelectMode) toggleSelectMode();
+      renderVault();
+    }
+
+    /* Fast Streamed File / ZIP Import */
+    function triggerFileInput() {
+      if (!document.getElementById('fabMenu').classList.contains('hidden')) {
+        toggleFabMenu();
+      }
+      const input = document.getElementById('mediaFileInput');
+      input.value = '';
+      input.click();
+    }
+
+    async function processZipFile(zipFile, targetFolderId) {
+      try {
+        const zip = await JSZip.loadAsync(zipFile);
+        const entries = [];
+
+        zip.forEach((relativePath, file) => {
+          if (!file.dir) {
+            const mimeType = getMimeType(relativePath);
+            if (mimeType) {
+              entries.push({ relativePath, file, mimeType });
+            }
+          }
         });
 
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open("VaultMediaApp", 1);
-                request.onupgradeneeded = (e) => {
-                    const database = e.target.result;
-                    if (!database.objectStoreNames.contains("folders")) database.createObjectStore("folders", { keyPath: "id" });
-                    if (!database.objectStoreNames.contains("media")) {
-                        const mediaStore = database.createObjectStore("media", { keyPath: "id" });
-                        mediaStore.createIndex("folderId", "folderId", { unique: false });
-                    }
-                };
-                request.onsuccess = (e) => { db = e.target.result; resolve(db); };
-                request.onerror = (e) => reject(e);
-            });
+        if (entries.length === 0) {
+          showToast('Aucun média lisible dans le ZIP');
+          return 0;
         }
 
-        function enterPin(digit) {
-            if (enteredPin.length < 4) {
-                enteredPin += digit;
-                updatePinDots();
-                if (enteredPin.length === 4) {
-                    setTimeout(() => {
-                        if (enteredPin === currentPin) {
-                            document.getElementById("lockScreen").classList.add("hidden");
-                            enteredPin = "";
-                            updatePinDots();
-                            loadFolders();
-                            updateStorageUsage();
-                        } else {
-                            alert("Code PIN incorrect");
-                            enteredPin = "";
-                            updatePinDots();
-                        }
-                    }, 120);
-                }
+        showProgressModal('Extraction ZIP...', `0 / ${entries.length}`);
+
+        let count = 0;
+        for (const entry of entries) {
+          const blob = await entry.file.async('blob');
+          const fileName = entry.relativePath.split('/').pop();
+          const mediaItem = {
+            id: 'm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            folderId: targetFolderId,
+            name: fileName,
+            type: entry.mimeType,
+            blob: blob,
+            createdAt: Date.now()
+          };
+          await saveMediaToDB(mediaItem);
+          count++;
+          updateProgressModal((count / entries.length) * 100, `${count} / ${entries.length}`);
+        }
+        hideProgressModal();
+        return count;
+      } catch (err) {
+        console.error(err);
+        hideProgressModal();
+        showToast('Erreur lors de la décompression');
+        return 0;
+      }
+    }
+
+    async function handleFileImport(event) {
+      const files = Array.from(event.target.files);
+      if (files.length === 0) return;
+
+      // Import into current folder or default to 'f_default' if imported from root
+      const targetFolderId = appState.currentFolderId || 'f_default';
+      let totalImported = 0;
+
+      for (const file of files) {
+        if (file.name.toLowerCase().endsWith('.zip')) {
+          totalImported += await processZipFile(file, targetFolderId);
+        } else {
+          const mimeType = file.type || getMimeType(file.name);
+          const mediaItem = {
+            id: 'm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            folderId: targetFolderId,
+            name: file.name,
+            type: mimeType,
+            blob: file,
+            createdAt: Date.now()
+          };
+          await saveMediaToDB(mediaItem);
+          totalImported++;
+        }
+      }
+
+      showToast(`Terminé: ${totalImported} fichier(s) importé(s)`);
+      renderVault();
+    }
+
+    /* Folder Actions */
+    function openCreateFolderModal() {
+      toggleFabMenu();
+      document.getElementById('folderNameInput').value = '';
+      openModal('createFolderModal');
+    }
+
+    function submitCreateFolder() {
+      const name = document.getElementById('folderNameInput').value.trim();
+      if (!name) return;
+
+      appState.folders.push({
+        id: 'f_' + Date.now(),
+        name: name,
+        parentId: appState.currentFolderId
+      });
+      saveFolders();
+      closeModal('createFolderModal');
+      showToast('Dossier créé');
+      renderVault();
+    }
+
+    async function deleteFolder(folderId) {
+      appState.folders = appState.folders.filter(f => f.id !== folderId);
+      saveFolders();
+      const items = await getMediaMetadataInFolder(folderId);
+      for (let item of items) {
+        await deleteMediaFromDB(item.id);
+      }
+      showToast('Dossier supprimé');
+      renderVault();
+    }
+
+    /* Media Viewer */
+    async function openMediaViewer(id) {
+      const item = await getMediaItemBlob(id);
+      if (!item) return;
+
+      const container = document.getElementById('viewerContainer');
+      const url = URL.createObjectURL(item.blob);
+      const isVideo = item.type.startsWith('video');
+
+      container.innerHTML = isVideo ? 
+        `<video src="${url}" controls autoplay class="max-w-full max-h-full rounded-lg"></video>` : 
+        `<img src="${url}" class="max-w-full max-h-full object-contain">`;
+
+      openModal('mediaViewerModal');
+    }
+
+    function closeMediaViewer() {
+      document.getElementById('viewerContainer').innerHTML = '';
+      closeModal('mediaViewerModal');
+    }
+
+    /* Slideshow Engine */
+    let slideshowState = {
+      queue: [],
+      currentIndex: 0,
+      timer: null
+    };
+
+    function openSlideshowModal() {
+      const list = document.getElementById('slideshowFoldersList');
+      list.innerHTML = '';
+      appState.folders.forEach(f => {
+        list.innerHTML += `
+          <label class="flex items-center gap-2 text-xs text-slate-200 cursor-pointer py-1">
+            <input type="checkbox" value="${f.id}" checked class="accent-indigo-600">
+            <span>📁 ${f.name}</span>
+          </label>
+        `;
+      });
+      openModal('slideshowModal');
+    }
+
+    async function startSlideshow() {
+      const checkedBoxes = Array.from(document.querySelectorAll('#slideshowFoldersList input:checked')).map(cb => cb.value);
+      
+      let allItems = [];
+      for (let folderId of checkedBoxes) {
+        const items = await getMediaMetadataInFolder(folderId);
+        allItems = allItems.concat(items);
+      }
+
+      if (allItems.length === 0) {
+        showToast('Aucun média disponible pour le diaporama');
+        return;
+      }
+
+      slideshowState.queue = allItems.sort(() => Math.random() - 0.5);
+      slideshowState.currentIndex = 0;
+
+      closeModal('slideshowModal');
+      document.getElementById('slideshowViewer').classList.remove('hidden');
+      renderSlideshowItem();
+    }
+
+    async function renderSlideshowItem() {
+      clearTimeout(slideshowState.timer);
+      const container = document.getElementById('slideshowContent');
+      const currentMeta = slideshowState.queue[slideshowState.currentIndex];
+      const item = await getMediaItemBlob(currentMeta.id);
+
+      if (!item) {
+        nextSlideshowItem();
+        return;
+      }
+
+      const url = URL.createObjectURL(item.blob);
+      const isVideo = item.type.startsWith('video');
+      const photoDuration = parseInt(document.getElementById('photoDurationSlider').value) * 1000;
+      const fullVideo = document.getElementById('fullVideoToggle').checked;
+
+      if (isVideo) {
+        container.innerHTML = `<video id="slideVideo" src="${url}" autoplay class="max-w-full max-h-full object-contain"></video>`;
+        const video = document.getElementById('slideVideo');
+        if (fullVideo) {
+          video.onended = () => nextSlideshowItem();
+        } else {
+          slideshowState.timer = setTimeout(nextSlideshowItem, photoDuration);
+        }
+      } else {
+        container.innerHTML = `<img src="${url}" class="max-w-full max-h-full object-contain">`;
+        slideshowState.timer = setTimeout(nextSlideshowItem, photoDuration);
+      }
+    }
+
+    function nextSlideshowItem() {
+      slideshowState.currentIndex = (slideshowState.currentIndex + 1) % slideshowState.queue.length;
+      renderSlideshowItem();
+    }
+
+    function stopSlideshow() {
+      clearTimeout(slideshowState.timer);
+      document.getElementById('slideshowViewer').classList.add('hidden');
+      document.getElementById('slideshowContent').innerHTML = '';
+    }
+
+    /* Backup & Settings */
+    function openSettingsModal() { openModal('settingsModal'); }
+
+    function updatePin() {
+      const newPin = document.getElementById('newPinInput').value;
+      if (newPin.length === 4 && /^\d+$/.test(newPin)) {
+        appState.pin = newPin;
+        localStorage.setItem('calculathor_pin', newPin);
+        showToast('Code PIN mis à jour');
+        document.getElementById('newPinInput').value = '';
+        closeModal('settingsModal');
+      } else {
+        showToast('PIN invalide (4 chiffres requis)');
+      }
+    }
+
+    async function exportBackupZip() {
+      closeModal('settingsModal');
+      showProgressModal('Export Sauvegarde...', 'Préparation des fichiers');
+
+      const zip = new JSZip();
+      zip.file('folders.json', JSON.stringify(appState.folders));
+
+      const mediaFolder = zip.folder('media');
+      const metadata = [];
+
+      const tx = appState.db.transaction('media', 'readonly');
+      const store = tx.objectStore('media');
+      const request = store.openCursor();
+
+      request.onsuccess = async (e) => {
+        const cursor = e.target.result;
+        if (cursor) {
+          const item = cursor.value;
+          const ext = item.type.split('/')[1] || 'bin';
+          mediaFolder.file(`${item.id}.${ext}`, item.blob);
+          metadata.push({ id: item.id, folderId: item.folderId, name: item.name, type: item.type });
+          cursor.continue();
+        } else {
+          zip.file('metadata.json', JSON.stringify(metadata));
+          updateProgressModal(80, 'Compression du ZIP...');
+          
+          const content = await zip.generateAsync({ type: 'blob' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(content);
+          a.download = `calculathor_backup_${Date.now()}.zip`;
+          a.click();
+
+          hideProgressModal();
+          showToast('Exportation terminée');
+        }
+      };
+    }
+
+    function triggerZipImport() {
+      document.getElementById('zipFileInput').click();
+    }
+
+    function importBackupZip(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      closeModal('settingsModal');
+      showProgressModal('Restauration...', 'Lecture de l\'archive');
+
+      JSZip.loadAsync(file).then(async zip => {
+        if (zip.file('folders.json')) {
+          const foldersText = await zip.file('folders.json').async('string');
+          appState.folders = JSON.parse(foldersText);
+          saveFolders();
+        }
+
+        if (zip.file('metadata.json')) {
+          const metadataText = await zip.file('metadata.json').async('string');
+          const metadata = JSON.parse(metadataText);
+
+          let count = 0;
+          for (let meta of metadata) {
+            const ext = meta.type.split('/')[1] || 'bin';
+            const zipFile = zip.file(`media/${meta.id}.${ext}`);
+            if (zipFile) {
+              const blob = await zipFile.async('blob');
+              const mediaItem = {
+                ...meta,
+                blob: blob,
+                createdAt: Date.now()
+              };
+              await saveMediaToDB(mediaItem);
+              count++;
+              updateProgressModal((count / metadata.length) * 100, `${count} / ${metadata.length}`);
             }
+          }
         }
-
-        function clearPin() {
-            enteredPin = enteredPin.slice(0, -1);
-            updatePinDots();
-        }
-
-        function updatePinDots() {
-            document.querySelectorAll("#pinDots div").forEach((dot, idx) => {
-                if (idx < enteredPin.length) {
-                    dot.className = "w-4 h-4 rounded-full bg-inPurple border-2 border-inPurple scale-110 transition-all duration-150";
-                } else {
-                    dot.className = "w-4 h-4 rounded-full border-2 border-inGray/50 transition-all duration-150";
-                }
-            });
-        }
-
-        function switchTab(tab) {
-            document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-            document.querySelectorAll(".nav-item").forEach(el => el.className = "nav-item flex flex-col items-center space-y-1 text-inGray");
-
-            if (tab === 'folders') {
-                document.getElementById("tabFolders").classList.remove("hidden");
-                document.getElementById("nav-folders").className = "nav-item flex flex-col items-center space-y-1 text-inPurple";
-                document.getElementById("headerTitle").innerText = "InCalc";
-                document.getElementById("fabContainer").classList.remove("hidden");
-            } else if (tab === 'slideshow') {
-                document.getElementById("tabSlideshow").classList.remove("hidden");
-                document.getElementById("nav-slideshow").className = "nav-item flex flex-col items-center space-y-1 text-inPurple";
-                document.getElementById("headerTitle").innerText = "Diaporama";
-                document.getElementById("fabContainer").classList.add("hidden");
-                renderSlideshowFolderList();
-            } else if (tab === 'settings') {
-                document.getElementById("tabSettings").classList.remove("hidden");
-                document.getElementById("nav-settings").className = "nav-item flex flex-col items-center space-y-1 text-inPurple";
-                document.getElementById("headerTitle").innerText = "Réglages";
-                document.getElementById("fabContainer").classList.add("hidden");
-                updateStorageUsage();
-            }
-        }
-
-        function toggleFabMenu() {
-            document.getElementById("fabMenu").classList.toggle("hidden");
-        }
-
-        function handleFabUpload(event) {
-            if (!currentFolderId) {
-                alert("Sélectionnez d'abord un album pour y ajouter des médias.");
-                return;
-            }
-            handleMediaUpload(event);
-            toggleFabMenu();
-        }
-
-        function openCreateFolderModal() {
-            const folderName = prompt("Nom du nouvel album :");
-            if (folderName && folderName.trim() !== "") {
-                const tx = db.transaction("folders", "readwrite");
-                tx.objectStore("folders").add({ id: 'folder_' + Date.now(), name: folderName.trim(), createdAt: new Date() });
-                tx.oncomplete = () => loadFolders();
-            }
-        }
-
-        function loadFolders() {
-            const grid = document.getElementById("foldersGrid");
-            grid.innerHTML = "";
-            const tx = db.transaction(["folders", "media"], "readonly");
-            tx.objectStore("folders").getAll().onsuccess = (e) => {
-                const folders = e.target.result;
-                if (folders.length === 0) {
-                    grid.innerHTML = `<div class="col-span-2 text-center py-12 text-inGray text-sm">Aucun album. Appuyez sur + pour en créer un.</div>`;
-                    return;
-                }
-                folders.forEach(folder => {
-                    tx.objectStore("media").index("folderId").getAll(folder.id).onsuccess = async (mEv) => {
-                        const medias = mEv.target.result;
-                        const card = document.createElement("div");
-                        card.className = "bg-inCard border border-inCardBorder p-3 rounded-2xl flex flex-col justify-between h-48 active:scale-95 transition cursor-pointer overflow-hidden shadow-xl";
-                        card.onclick = () => openFolder(folder.id, folder.name);
-
-                        let previewHTML = "";
-                        if (medias.length > 0) {
-                            const first = medias[0];
-                            const isVid = isVideoFile(first.name, first.type);
-                            
-                            if (isVid) {
-                                let thumb = videoThumbnailCache.get(first.id);
-                                if (!thumb) {
-                                    thumb = await generateVideoThumbnail(first.fileData);
-                                    if (thumb) videoThumbnailCache.set(first.id, thumb);
-                                }
-
-                                if (thumb) {
-                                    previewHTML = `<div class="w-full h-28 rounded-xl overflow-hidden bg-black/60 mb-2 relative border border-inCardBorder/40">
-                                        <img src="${thumb}" class="w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center"><i class="fa-solid fa-play text-white text-base drop-shadow-md"></i></div>
-                                    </div>`;
-                                } else {
-                                    previewHTML = `<div class="w-full h-28 rounded-xl overflow-hidden bg-purple-950/40 border border-inCardBorder/40 mb-2 flex flex-col items-center justify-center text-inPurple">
-                                        <i class="fa-solid fa-film text-3xl mb-1"></i>
-                                        <span class="text-[9px] text-inGray font-bold truncate px-2 max-w-full">${first.name}</span>
-                                    </div>`;
-                                }
-                            } else {
-                                const url = URL.createObjectURL(first.fileData);
-                                previewHTML = `<div class="w-full h-28 rounded-xl overflow-hidden bg-black/40 mb-2 relative"><img src="${url}" class="w-full h-full object-cover"></div>`;
-                            }
-                        } else {
-                            previewHTML = `<div class="w-full h-28 bg-black/40 rounded-xl flex items-center justify-center mb-2"><i class="fa-solid fa-folder text-3xl text-inPurple/70"></i></div>`;
-                        }
-
-                        card.innerHTML = `${previewHTML}
-                            <div class="mt-auto flex items-center justify-between">
-                                <div class="truncate">
-                                    <div class="font-bold text-xs truncate">${folder.name}</div>
-                                    <div class="text-[10px] text-inGray mt-0.5"><i class="fa-solid fa-photo-film text-[9px] mr-1"></i>${medias.length}</div>
-                                </div>
-                                <i class="fa-solid fa-ellipsis-vertical text-inGray text-xs"></i>
-                            </div>`;
-                        grid.appendChild(card);
-                    };
-                });
-            };
-        }
-
-        function openFolder(folderId, folderName) {
-            currentFolderId = folderId;
-            isSelectMode = false;
-            selectedMediaIds.clear();
-            document.getElementById("currentFolderName").innerText = folderName;
-            document.getElementById("foldersGrid").classList.add("hidden");
-            document.getElementById("folderDetailView").classList.remove("hidden");
-            document.getElementById("selectionActionBar").classList.add("hidden");
-            document.getElementById("longPressHint").classList.remove("hidden");
-            loadFolderMedia(folderId);
-        }
-
-        function closeFolderDetail() {
-            currentFolderId = null;
-            isSelectMode = false;
-            selectedMediaIds.clear();
-            document.getElementById("folderDetailView").classList.add("hidden");
-            document.getElementById("foldersGrid").classList.remove("hidden");
-            loadFolders();
-        }
-
-        function deleteCurrentFolder() {
-            if (!currentFolderId) return;
-            if (confirm("Voulez-vous vraiment supprimer cet album et tout son contenu ?")) {
-                const tx = db.transaction(["folders", "media"], "readwrite");
-                tx.objectStore("folders").delete(currentFolderId);
-                
-                // Supprimer tous les médias associés
-                const mediaStore = tx.objectStore("media");
-                const index = mediaStore.index("folderId");
-                index.getAllKeys(currentFolderId).onsuccess = (e) => {
-                    e.target.result.forEach(key => mediaStore.delete(key));
-                };
-
-                tx.oncomplete = () => {
-                    closeFolderDetail();
-                };
-            }
-        }
-
-        function enterSelectModeWithMedia(initialId) {
-            isSelectMode = true;
-            selectedMediaIds.clear();
-            selectedMediaIds.add(initialId);
-            if (navigator.vibrate) navigator.vibrate(50);
-            document.getElementById("selectionActionBar").classList.remove("hidden");
-            document.getElementById("longPressHint").classList.add("hidden");
-            document.getElementById("selectedCount").innerText = selectedMediaIds.size;
-            loadFolderMedia(currentFolderId);
-        }
-
-        function exitSelectMode() {
-            isSelectMode = false;
-            selectedMediaIds.clear();
-            document.getElementById("selectionActionBar").classList.add("hidden");
-            document.getElementById("longPressHint").classList.remove("hidden");
-            loadFolderMedia(currentFolderId);
-        }
-
-        function toggleMediaSelection(id) {
-            if (selectedMediaIds.has(id)) {
-                selectedMediaIds.delete(id);
-            } else {
-                selectedMediaIds.add(id);
-            }
-            document.getElementById("selectedCount").innerText = selectedMediaIds.size;
-            loadFolderMedia(currentFolderId);
-        }
-
-        function toggleSelectAllMedia() {
-            if (selectedMediaIds.size === currentFolderMediaList.length) {
-                selectedMediaIds.clear();
-                document.getElementById("selectAllMediaBtn").innerText = "Tout sélectionner";
-            } else {
-                currentFolderMediaList.forEach(m => selectedMediaIds.add(m.id));
-                document.getElementById("selectAllMediaBtn").innerText = "Tout désélectionner";
-            }
-            document.getElementById("selectedCount").innerText = selectedMediaIds.size;
-            loadFolderMedia(currentFolderId);
-        }
-
-        function deleteSelectedMedia() {
-            if (selectedMediaIds.size === 0) {
-                alert("Veuillez sélectionner au moins un média.");
-                return;
-            }
-            if (confirm(`Supprimer ces ${selectedMediaIds.size} éléments ?`)) {
-                const tx = db.transaction("media", "readwrite");
-                const store = tx.objectStore("media");
-                selectedMediaIds.forEach(id => store.delete(id));
-                tx.oncomplete = () => exitSelectMode();
-            }
-        }
-
-        function openMoveModalMultiple() {
-            if (selectedMediaIds.size === 0) {
-                alert("Veuillez sélectionner au moins un média à déplacer.");
-                return;
-            }
-            const container = document.getElementById("targetFolderList");
-            container.innerHTML = "";
-            const tx = db.transaction("folders", "readonly");
-            tx.objectStore("folders").getAll().onsuccess = (e) => {
-                const folders = e.target.result.filter(f => f.id !== currentFolderId);
-                if (folders.length === 0) {
-                    container.innerHTML = `<div class="text-xs text-inGray text-center py-4">Aucun autre album disponible.</div>`;
-                } else {
-                    folders.forEach(f => {
-                        const btn = document.createElement("button");
-                        btn.className = "w-full p-3 bg-inBg rounded-xl border border-inCardBorder text-left text-xs font-bold text-white active:bg-inPurple/30 transition flex items-center justify-between";
-                        btn.innerHTML = `<span>${f.name}</span><i class="fa-solid fa-chevron-right text-[10px] text-inGray"></i>`;
-                        btn.onclick = () => executeMoveMultiple(f.id);
-                        container.appendChild(btn);
-                    });
-                }
-                document.getElementById("moveMediaModal").classList.remove("hidden");
-            };
-        }
-
-        function executeMoveMultiple(targetFolderId) {
-            const tx = db.transaction("media", "readwrite");
-            const store = tx.objectStore("media");
-            selectedMediaIds.forEach(id => {
-                store.get(id).onsuccess = (e) => {
-                    const item = e.target.result;
-                    if (item) {
-                        item.folderId = targetFolderId;
-                        store.put(item);
-                    }
-                };
-            });
-            tx.oncomplete = () => {
-                closeMoveModal();
-                exitSelectMode();
-            };
-        }
-
-        function handleMediaUpload(event) {
-            const files = event.target.files;
-            if (!files || files.length === 0 || !currentFolderId) return;
-
-            const tx = db.transaction("media", "readwrite");
-            const store = tx.objectStore("media");
-            Array.from(files).forEach(file => {
-                const isVid = isVideoFile(file.name, file.type);
-                store.add({
-                    id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                    folderId: currentFolderId,
-                    name: file.name,
-                    type: isVid ? 'video' : 'image',
-                    fileData: file,
-                    createdAt: new Date()
-                });
-            });
-            tx.oncomplete = () => loadFolderMedia(currentFolderId);
-        }
-
-        function loadFolderMedia(folderId) {
-            const grid = document.getElementById("mediaGrid");
-            grid.innerHTML = "";
-            const tx = db.transaction("media", "readonly");
-            tx.objectStore("media").index("folderId").getAll(folderId).onsuccess = (e) => {
-                currentFolderMediaList = e.target.result;
-                if (currentFolderMediaList.length === 0) {
-                    grid.innerHTML = `<div class="col-span-2 text-center py-8 text-inGray text-xs">Album vide.</div>`;
-                    return;
-                }
-
-                currentFolderMediaList.forEach(async (item, index) => {
-                    const el = document.createElement("div");
-                    el.className = "relative aspect-square bg-black rounded-xl overflow-hidden border border-inCardBorder cursor-pointer shadow-md select-none touch-none";
-
-                    const isVid = item.type === 'video' || isVideoFile(item.name, item.fileData.type);
-
-                    if (isVid) {
-                        let thumb = videoThumbnailCache.get(item.id);
-                        if (!thumb) {
-                            thumb = await generateVideoThumbnail(item.fileData);
-                            if (thumb) videoThumbnailCache.set(item.id, thumb);
-                        }
-
-                        if (thumb) {
-                            el.innerHTML = `
-                                <img src="${thumb}" class="w-full h-full object-cover pointer-events-none">
-                                <div class="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
-                                    <div class="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center border border-white/30 backdrop-blur-xs">
-                                        <i class="fa-solid fa-play text-white text-xs ml-0.5"></i>
-                                    </div>
-                                </div>
-                            `;
-                        } else {
-                            el.innerHTML = `
-                                <div class="w-full h-full bg-purple-950/30 flex flex-col items-center justify-center p-2 text-center">
-                                    <i class="fa-solid fa-video text-inPurple text-2xl mb-1"></i>
-                                    <span class="text-[9px] text-inGray font-medium truncate max-w-full">${item.name}</span>
-                                </div>
-                            `;
-                        }
-                    } else {
-                        const url = URL.createObjectURL(item.fileData);
-                        el.innerHTML = `<img src="${url}" class="w-full h-full object-cover pointer-events-none">`;
-                    }
-
-                    // TIMERS APPUI LONG (~450ms) ET TAP SIMPLE
-                    let pressTimer = null;
-                    let isLongPress = false;
-
-                    const startPress = (ev) => {
-                        isLongPress = false;
-                        pressTimer = setTimeout(() => {
-                            isLongPress = true;
-                            if (!isSelectMode) {
-                                enterSelectModeWithMedia(item.id);
-                            }
-                        }, 450);
-                    };
-
-                    const cancelPress = () => {
-                        if (pressTimer) clearTimeout(pressTimer);
-                    };
-
-                    const handleTap = (ev) => {
-                        cancelPress();
-                        if (isLongPress) return;
-
-                        if (isSelectMode) {
-                            toggleMediaSelection(item.id);
-                        } else {
-                            openMediaViewer(index);
-                        }
-                    };
-
-                    el.addEventListener("touchstart", startPress, { passive: true });
-                    el.addEventListener("touchend", handleTap);
-                    el.addEventListener("touchmove", cancelPress, { passive: true });
-                    el.addEventListener("mousedown", startPress);
-                    el.addEventListener("mouseup", handleTap);
-                    el.addEventListener("mouseleave", cancelPress);
-
-                    if (isSelectMode) {
-                        const isChecked = selectedMediaIds.has(item.id);
-                        const checkBadge = document.createElement("div");
-                        checkBadge.className = `absolute top-2 right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs ${isChecked ? 'bg-inPurple border-inPurple text-white' : 'border-white/80 bg-black/50'}`;
-                        checkBadge.innerHTML = isChecked ? '<i class="fa-solid fa-check text-[10px]"></i>' : '';
-                        el.appendChild(checkBadge);
-                    }
-
-                    grid.appendChild(el);
-                });
-            };
-        }
-
-        function openMoveModalSingle() {
-            const container = document.getElementById("targetFolderList");
-            container.innerHTML = "";
-            const tx = db.transaction("folders", "readonly");
-            tx.objectStore("folders").getAll().onsuccess = (e) => {
-                const folders = e.target.result.filter(f => f.id !== currentFolderId);
-                if (folders.length === 0) {
-                    container.innerHTML = `<div class="text-xs text-inGray text-center py-4">Aucun autre album disponible.</div>`;
-                } else {
-                    folders.forEach(f => {
-                        const btn = document.createElement("button");
-                        btn.className = "w-full p-3 bg-inBg rounded-xl border border-inCardBorder text-left text-xs font-bold text-white active:bg-inPurple/30 transition flex items-center justify-between";
-                        btn.innerHTML = `<span>${f.name}</span><i class="fa-solid fa-chevron-right text-[10px] text-inGray"></i>`;
-                        btn.onclick = () => executeMoveSingle(f.id);
-                        container.appendChild(btn);
-                    });
-                }
-                document.getElementById("moveMediaModal").classList.remove("hidden");
-            };
-        }
-
-        function closeMoveModal() {
-            document.getElementById("moveMediaModal").classList.add("hidden");
-        }
-
-        function executeMoveSingle(targetFolderId) {
-            const currentMedia = currentFolderMediaList[currentViewerIndex];
-            if (!currentMedia) return;
-
-            const tx = db.transaction("media", "readwrite");
-            const store = tx.objectStore("media");
-            currentMedia.folderId = targetFolderId;
-            store.put(currentMedia);
-
-            tx.oncomplete = () => {
-                closeMoveModal();
-                closeMediaViewer();
-                loadFolderMedia(currentFolderId);
-            };
-        }
-
-        function openMediaViewer(index) {
-            currentViewerIndex = index;
-            document.getElementById("mediaViewerModal").classList.remove("hidden");
-            renderViewerMedia();
-        }
-
-        function closeMediaViewer() {
-            document.getElementById("mediaViewerModal").classList.add("hidden");
-            document.getElementById("viewerContent").innerHTML = "";
-        }
-
-        function renderViewerMedia() {
-            if (currentFolderMediaList.length === 0) { closeMediaViewer(); return; }
-            const item = currentFolderMediaList[currentViewerIndex];
-            const url = URL.createObjectURL(item.fileData);
-            const container = document.getElementById("viewerContent");
-            container.innerHTML = "";
-
-            const isVid = item.type === 'video' || isVideoFile(item.name, item.fileData.type);
-
-            if (isVid) {
-                const video = document.createElement("video");
-                video.src = url;
-                video.controls = true;
-                video.autoplay = true;
-                video.playsInline = true;
-                video.setAttribute("webkit-playsinline", "true");
-                video.className = "max-w-full max-h-full object-contain rounded-lg";
-                container.appendChild(video);
-            } else {
-                const img = document.createElement("img");
-                img.src = url;
-                img.className = "max-w-full max-h-full object-contain rounded-lg";
-                container.appendChild(img);
-            }
-
-            document.getElementById("viewerCounter").innerText = `${currentViewerIndex + 1} / ${currentFolderMediaList.length}`;
-        }
-
-        function navigateViewer(direction) {
-            currentViewerIndex = (currentViewerIndex + direction + currentFolderMediaList.length) % currentFolderMediaList.length;
-            renderViewerMedia();
-        }
-
-        function deleteViewerMedia() {
-            if (confirm("Supprimer ce média ?")) {
-                const item = currentFolderMediaList[currentViewerIndex];
-                const tx = db.transaction("media", "readwrite");
-                tx.objectStore("media").delete(item.id);
-                tx.oncomplete = () => {
-                    loadFolderMedia(currentFolderId);
-                    if (currentFolderMediaList.length <= 1) closeMediaViewer();
-                    else { currentViewerIndex = currentViewerIndex % (currentFolderMediaList.length - 1); renderViewerMedia(); }
-                };
-            }
-        }
-
-        function renderSlideshowFolderList() {
-            const container = document.getElementById("slideshowFolderList");
-            container.innerHTML = "";
-            const tx = db.transaction("folders", "readonly");
-            tx.objectStore("folders").getAll().onsuccess = (e) => {
-                const folders = e.target.result;
-                if (folders.length === 0) {
-                    container.innerHTML = `<div class="text-xs text-inGray text-center py-2">Aucun album disponible.</div>`;
-                    return;
-                }
-                folders.forEach(f => {
-                    const div = document.createElement("label");
-                    div.className = "flex items-center justify-between p-2.5 bg-inBg rounded-xl border border-inCardBorder text-sm cursor-pointer";
-                    div.innerHTML = `<span class="truncate text-xs font-semibold">${f.name}</span><input type="checkbox" value="${f.id}" class="folder-checkbox w-4 h-4 accent-inPurple rounded">`;
-                    container.appendChild(div);
-                });
-            };
-        }
-
-        function toggleSelectAllFolders() {
-            const checkboxes = document.querySelectorAll(".folder-checkbox");
-            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-            checkboxes.forEach(cb => cb.checked = !allChecked);
-            document.getElementById("selectAllBtn").innerText = allChecked ? "Tout sélectionner" : "Tout désélectionner";
-        }
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        function startSlideshow() {
-            const selectedFolderIds = Array.from(document.querySelectorAll(".folder-checkbox:checked")).map(cb => cb.value);
-            if (selectedFolderIds.length === 0) {
-                alert("Veuillez sélectionner au moins un album.");
-                return;
-            }
-
-            const tx = db.transaction("media", "readonly");
-            tx.objectStore("media").getAll().onsuccess = (e) => {
-                const allMedia = e.target.result;
-                activeSlideshowQueue = allMedia.filter(m => selectedFolderIds.includes(m.folderId));
-
-                if (activeSlideshowQueue.length === 0) {
-                    alert("Les albums sélectionnés ne contiennent aucun média.");
-                    return;
-                }
-
-                activeSlideshowQueue = shuffleArray(activeSlideshowQueue);
-                activeSlideshowIndex = 0;
-
-                document.getElementById("slideshowOverlay").classList.remove("hidden");
-                renderSlideshowStep();
-            };
-        }
-
-        function renderSlideshowStep() {
-            clearTimeout(slideshowInterval);
-            if (activeSlideshowQueue.length === 0) return;
-
-            const container = document.getElementById("slideshowMediaContainer");
-            container.innerHTML = "";
-
-            const currentMedia = activeSlideshowQueue[activeSlideshowIndex];
-            const url = URL.createObjectURL(currentMedia.fileData);
-            const timerSec = parseInt(document.getElementById("slideshowTimerSelect").value) || 3;
-            const videoMode = document.querySelector('input[name="videoMode"]:checked')?.value || 'full';
-            const isVid = currentMedia.type === 'video' || isVideoFile(currentMedia.name, currentMedia.fileData.type);
-
-            if (isVid) {
-                const video = document.createElement("video");
-                video.src = url;
-                video.autoplay = true;
-                video.playsInline = true;
-                video.setAttribute("webkit-playsinline", "true");
-                video.controls = false;
-                video.className = "max-w-full max-h-full object-contain";
-                container.appendChild(video);
-
-                if (videoMode === 'full') {
-                    // Passer à la suite dès que la vidéo est terminée
-                    video.onended = () => nextSlide();
-                    // Sécurité au cas où la vidéo ne démarrerait pas
-                    video.onerror = () => nextSlide();
-                } else {
-                    // Même durée que le minuteur des photos
-                    slideshowInterval = setTimeout(nextSlide, timerSec * 1000);
-                }
-            } else {
-                const img = document.createElement("img");
-                img.src = url;
-                img.className = "max-w-full max-h-full object-contain";
-                container.appendChild(img);
-
-                slideshowInterval = setTimeout(nextSlide, timerSec * 1000);
-            }
-        }
-
-        function nextSlide() {
-            activeSlideshowIndex = (activeSlideshowIndex + 1) % activeSlideshowQueue.length;
-            renderSlideshowStep();
-        }
-
-        function stopSlideshow() {
-            clearTimeout(slideshowInterval);
-            document.getElementById("slideshowOverlay").classList.add("hidden");
-            document.getElementById("slideshowMediaContainer").innerHTML = "";
-        }
-
-        function updateStorageUsage() {
-            if (navigator.storage && navigator.storage.estimate) {
-                navigator.storage.estimate().then(estimate => {
-                    const mb = (estimate.usage / (1024 * 1024)).toFixed(1);
-                    document.getElementById("storageUsage").innerText = `${mb} Mo`;
-                });
-            }
-        }
-
-        function changePinModal() {
-            const newPin = prompt("Saisissez le nouveau code PIN (4 chiffres) :");
-            if (newPin && newPin.length === 4 && !isNaN(newPin)) {
-                currentPin = newPin;
-                alert("Code PIN mis à jour avec succès.");
-            } else if (newPin !== null) {
-                alert("Code invalide. Le PIN doit comporter 4 chiffres.");
-            }
-        }
-
-        function exportAllToZIP() {
-            const zip = new JSZip();
-            const tx = db.transaction(["folders", "media"], "readonly");
-            
-            tx.objectStore("folders").getAll().onsuccess = (fEv) => {
-                const folders = fEv.target.result;
-                const folderMap = new Map();
-                folders.forEach(f => folderMap.set(f.id, f.name));
-
-                tx.objectStore("media").getAll().onsuccess = (mEv) => {
-                    const medias = mEv.target.result;
-                    if (medias.length === 0) {
-                        alert("Aucun média à exporter.");
-                        return;
-                    }
-
-                    medias.forEach((m) => {
-                        const folderName = folderMap.get(m.folderId) || "Album";
-                        zip.folder(folderName).file(m.name, m.fileData);
-                    });
-
-                    zip.generateAsync({ type: "blob" }).then((content) => {
-                        const a = document.createElement("a");
-                        a.href = URL.createObjectURL(content);
-                        a.download = `InCalc_Sauvegarde_${new Date().toISOString().slice(0,10)}.zip`;
-                        a.click();
-                    });
-                };
-            };
-        }
-
-        function importZIPFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            JSZip.loadAsync(file).then((zip) => {
-                const promises = [];
-                zip.forEach((relativePath, zipEntry) => {
-                    if (!zipEntry.dir) {
-                        const pathParts = relativePath.split('/');
-                        const folderName = pathParts.length > 1 ? pathParts[0] : "Importé";
-                        const fileName = pathParts[pathParts.length - 1];
-
-                        const p = zipEntry.async("blob").then((blob) => {
-                            return { folderName, fileName, blob };
-                        });
-                        promises.push(p);
-                    }
-                });
-
-                Promise.all(promises).then((importedItems) => {
-                    const tx = db.transaction(["folders", "media"], "readwrite");
-                    const folderStore = tx.objectStore("folders");
-                    const mediaStore = tx.objectStore("media");
-
-                    const folderNameToId = new Map();
-
-                    folderStore.getAll().onsuccess = (e) => {
-                        const existingFolders = e.target.result;
-                        existingFolders.forEach(f => folderNameToId.set(f.name, f.id));
-
-                        importedItems.forEach((item) => {
-                            let fId = folderNameToId.get(item.folderName);
-                            if (!fId) {
-                                fId = 'folder_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-                                folderStore.add({ id: fId, name: item.folderName, createdAt: new Date() });
-                                folderNameToId.set(item.folderName, fId);
-                            }
-
-                            const isVid = isVideoFile(item.fileName, item.blob.type);
-                            mediaStore.add({
-                                id: 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                                folderId: fId,
-                                name: item.fileName,
-                                type: isVid ? 'video' : 'image',
-                                fileData: item.blob,
-                                createdAt: new Date()
-                            });
-                        });
-
-                        tx.oncomplete = () => {
-                            alert("Importation terminée avec succès !");
-                            switchTab("folders");
-                            loadFolders();
-                        };
-                    };
-                });
-            }).catch(() => {
-                alert("Erreur lors de la lecture du fichier ZIP.");
-            });
-        }
-
-        function clearAllData() {
-            if (confirm("ATTENTION : Cela supprimera définitivement tous vos albums et médias.")) {
-                const tx = db.transaction(["folders", "media"], "readwrite");
-                tx.objectStore("folders").clear();
-                tx.objectStore("media").clear();
-                tx.oncomplete = () => {
-                    alert("Coffre-fort réinitialisé.");
-                    switchTab("folders");
-                    loadFolders();
-                    updateStorageUsage();
-                };
-            }
-        }
-    </script>
+        hideProgressModal();
+        showToast('Restauration réussie');
+        renderVault();
+      });
+    }
+
+    /* Modal Progress UI Helpers */
+    function showProgressModal(title, subtitle) {
+      document.getElementById('progressTitle').innerText = title;
+      document.getElementById('progressSubtitle').innerText = subtitle;
+      document.getElementById('progressBar').style.width = '0%';
+      openModal('progressModal');
+    }
+
+    function updateProgressModal(percent, subtitle) {
+      document.getElementById('progressBar').style.width = `${percent}%`;
+      if (subtitle) document.getElementById('progressSubtitle').innerText = subtitle;
+    }
+
+    function hideProgressModal() { closeModal('progressModal'); }
+
+    /* UI Utilities */
+    function toggleFabMenu() {
+      const menu = document.getElementById('fabMenu');
+      const icon = document.getElementById('fabIcon');
+      menu.classList.toggle('hidden');
+      icon.classList.toggle('rotate-45');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2500);
+    }
+
+    /* App Boot */
+    window.onload = async () => {
+      await initDatabase();
+      loadFolders();
+    };
+  </script>
 </body>
 </html>
