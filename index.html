@@ -18,7 +18,6 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
     
-    /* Fast selection state without layout re-flow */
     .media-card.is-selected {
       outline: 2px solid #6366f1;
       outline-offset: -2px;
@@ -38,17 +37,16 @@
   <!-- APP CONTAINER -->
   <div id="app" class="h-full w-full flex flex-col justify-between relative overflow-hidden">
     
-    <!-- 1. LOCK SCREEN (DIGICODE) -->
-    <!-- MODIFICATION ICI : Ajout de pt-[50px] pour descendre le contenu sous la Dynamic Island -->
+    <!-- 1. LOCK SCREEN (PIN DIGICODE) -->
     <div id="lockScreen" class="absolute inset-0 z-50 bg-slate-950 flex flex-col justify-between p-6 pt-[50px] max-w-md mx-auto w-full transition-all duration-300">
       
       <!-- Top Indicator -->
       <div class="flex flex-col items-center">
         <div class="w-16 h-16 bg-indigo-600/20 text-indigo-500 rounded-3xl flex items-center justify-center text-2xl font-bold mb-4 shadow-lg shadow-indigo-500/10 border border-indigo-500/20">
-          <i class="fa-solid fa-calculator"></i>
+          <i class="fa-solid fa-lock"></i>
         </div>
-        <h1 class="text-2xl font-bold tracking-tight text-white mb-1">Calculathor</h1>
-        <p class="text-xs text-slate-400 font-medium">Saisissez le code PIN (Défaut: 0507)</p>
+        <h1 class="text-2xl font-bold tracking-tight text-white mb-1">Coffre Sécurisé</h1>
+        <p class="text-xs text-slate-400 font-medium">Saisissez votre code PIN (Défaut: 0507)</p>
         
         <!-- Code Dots -->
         <div class="flex gap-4 mt-8" id="pinDots">
@@ -83,7 +81,6 @@
     <div id="vaultScreen" class="hidden h-full w-full flex-col bg-slate-950">
       
       <!-- Top Navigation Bar -->
-      <!-- MODIFICATION ICI : Ajout de pt-[50px] pour descendre la barre de navigation sous la Dynamic Island -->
       <header class="p-4 pt-[50px] border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md flex items-center justify-between sticky top-0 z-20">
         <div class="flex items-center gap-3">
           <button id="backFolderBtn" onclick="openFolder(null)" class="hidden p-2.5 rounded-xl bg-slate-800/80 text-indigo-400 active:scale-95 transition-all border border-slate-700/50">
@@ -96,19 +93,16 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <!-- Selection Toggle (Inside folder view) -->
           <button id="selectToggleBtn" onclick="toggleSelectMode()" class="hidden p-2.5 rounded-xl bg-slate-800/80 text-slate-300 active:scale-95 transition-all text-xs font-medium px-3 flex items-center gap-2 border border-slate-700/50">
             <i class="fa-solid fa-check-double"></i>
             <span>Sélect.</span>
           </button>
           
-          <!-- Slideshow Launcher -->
           <button onclick="openSlideshowModal()" class="p-2.5 rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 active:scale-95 transition-all text-xs font-medium px-3 flex items-center gap-2">
             <i class="fa-solid fa-play"></i>
             <span>Diaporama</span>
           </button>
 
-          <!-- Settings Button -->
           <button onclick="openSettingsModal()" class="p-2.5 rounded-xl bg-slate-800/80 text-slate-300 active:scale-95 transition-all text-xs border border-slate-700/50">
             <i class="fa-solid fa-gear"></i>
           </button>
@@ -118,7 +112,6 @@
       <!-- Main Content Container -->
       <main class="flex-1 overflow-y-auto custom-scrollbar p-4 relative" id="scrollContainer">
         
-        <!-- Multi-select Action Bar -->
         <div id="selectActionBar" class="hidden sticky top-0 z-30 mb-4 p-3 bg-indigo-950/90 border border-indigo-500/40 rounded-2xl backdrop-blur-md flex items-center justify-between shadow-xl">
           <div class="text-xs font-semibold text-indigo-200">
             <span id="selectedCount">0</span> sélectionné(s)
@@ -130,23 +123,16 @@
           </div>
         </div>
 
-        <!-- 1. Folders Grid View (Displayed at Root or Inside Subfolders) -->
         <div id="foldersSection" class="mb-6">
           <h3 id="foldersSectionTitle" class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-1">Dossiers Sécurisés</h3>
-          <div id="foldersGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            <!-- Dynamic Folder Cards -->
-          </div>
+          <div id="foldersGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
         </div>
 
-        <!-- 2. Files Grid View (STRICTLY HIDDEN AT ROOT, DISPLAYED ONLY INSIDE FOLDERS) -->
         <div id="filesSection" class="hidden">
           <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-1">Photos & Vidéos</h3>
-          <div id="filesGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-            <!-- Dynamic Photos & Videos -->
-          </div>
+          <div id="filesGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2"></div>
         </div>
 
-        <!-- Empty State Notice -->
         <div id="emptyVaultNotice" class="hidden py-20 flex flex-col items-center justify-center text-center">
           <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600 text-2xl mb-3">
             <i class="fa-regular fa-folder-open"></i>
@@ -157,13 +143,11 @@
 
       </main>
 
-      <!-- FAB Action Button -->
       <div class="fixed bottom-6 right-6 z-40">
         <button onclick="toggleFabMenu()" class="w-14 h-14 rounded-full bg-indigo-600 text-white shadow-xl shadow-indigo-600/40 flex items-center justify-center text-xl active:scale-90 transition-all border border-indigo-400/30">
           <i id="fabIcon" class="fa-solid fa-plus transition-transform duration-300"></i>
         </button>
         
-        <!-- FAB Submenu -->
         <div id="fabMenu" class="hidden absolute bottom-16 right-0 mb-2 flex flex-col gap-2 items-end min-w-[210px]">
           <button onclick="openCreateFolderModal()" class="w-full bg-slate-900 border border-slate-800 text-slate-200 px-4 py-3 rounded-2xl text-xs font-semibold flex items-center justify-between shadow-xl active:scale-95">
             <span>Nouveau Dossier</span>
@@ -181,7 +165,6 @@
 
     <!-- 3. MODALS & OVERLAYS -->
 
-    <!-- Batch Progress Overlay -->
     <div id="progressModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
         <div class="w-12 h-12 rounded-full border-4 border-indigo-500/30 border-t-indigo-500 animate-spin mb-4"></div>
@@ -194,7 +177,6 @@
       </div>
     </div>
 
-    <!-- Create Folder Modal -->
     <div id="createFolderModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
         <h3 class="text-lg font-bold text-white mb-1">Nouveau dossier</h3>
@@ -207,19 +189,15 @@
       </div>
     </div>
 
-    <!-- Move Items Modal -->
     <div id="moveItemsModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
         <h3 class="text-lg font-bold text-white mb-1">Déplacer les éléments</h3>
         <p class="text-xs text-slate-400 mb-4">Sélectionnez le dossier destination.</p>
-        <div id="targetFoldersList" class="max-h-48 overflow-y-auto custom-scrollbar flex flex-col gap-2 mb-5">
-          <!-- Folders inserted dynamically -->
-        </div>
+        <div id="targetFoldersList" class="max-h-48 overflow-y-auto custom-scrollbar flex flex-col gap-2 mb-5"></div>
         <button onclick="closeModal('moveItemsModal')" class="w-full py-3 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 active:scale-95">Annuler</button>
       </div>
     </div>
 
-    <!-- Slideshow Modal -->
     <div id="slideshowModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
         <h3 class="text-lg font-bold text-white mb-1">Diaporama</h3>
@@ -228,9 +206,7 @@
         <div class="space-y-4 mb-6">
           <div>
             <label class="text-xs text-slate-300 font-medium block mb-1">Dossiers inclus :</label>
-            <div id="slideshowFoldersList" class="max-h-32 overflow-y-auto custom-scrollbar bg-slate-950 p-2 border border-slate-800 rounded-xl space-y-1">
-              <!-- Checkboxes inserted dynamically -->
-            </div>
+            <div id="slideshowFoldersList" class="max-h-32 overflow-y-auto custom-scrollbar bg-slate-950 p-2 border border-slate-800 rounded-xl space-y-1"></div>
           </div>
 
           <div>
@@ -254,7 +230,6 @@
       </div>
     </div>
 
-    <!-- Settings Modal -->
     <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
         <h3 class="text-lg font-bold text-white mb-4">Paramètres</h3>
@@ -287,32 +262,24 @@
       </div>
     </div>
 
-    <!-- Media Viewer Modal -->
-    <!-- MODIFICATION ICI : h-full p-0 pour utiliser tout l'espace -->
+    <!-- Media Viewer Modal (Respecte la taille d'écran avec object-contain) -->
     <div id="mediaViewerModal" class="hidden fixed inset-0 z-50 bg-black flex flex-col justify-between h-full p-0 overflow-hidden">
-      <!-- MODIFICATION ICI : Bouton de fermeture descendu un peu plus bas pour l'iPhone 15 (top-12) -->
       <div class="absolute top-12 right-4 z-50">
         <button onclick="closeMediaViewer()" class="w-10 h-10 rounded-full bg-slate-900/80 text-white border border-slate-700 flex items-center justify-center active:scale-95">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-      <!-- MODIFICATION ICI : w-full h-full p-0 flex items-center justify-center pour centrer l'image plein écran -->
-      <div id="viewerContainer" class="w-full h-full p-0 m-0 flex items-center justify-center overflow-hidden">
-        <!-- Media element inserted dynamically -->
-      </div>
+      <div id="viewerContainer" class="w-full h-full p-0 m-0 flex items-center justify-center overflow-hidden"></div>
     </div>
 
-    <!-- Slideshow Fullscreen Viewer -->
-    <div id="slideshowViewer" class="hidden fixed inset-0 z-50 bg-black flex items-center justify-center select-none" ondblclick="nextSlideshowItem()">
-      <button onclick="stopSlideshow()" class="absolute top-6 right-6 z-50 w-10 h-10 rounded-full bg-slate-900/60 text-white/80 border border-slate-700/50 flex items-center justify-center active:scale-95">
+    <!-- Slideshow Fullscreen Viewer (Appui sur l'écran pour passer à la suivante) -->
+    <div id="slideshowViewer" class="hidden fixed inset-0 z-50 bg-black flex items-center justify-center select-none" onclick="nextSlideshowItem()">
+      <button onclick="event.stopPropagation(); stopSlideshow();" class="absolute top-6 right-6 z-50 w-10 h-10 rounded-full bg-slate-900/60 text-white/80 border border-slate-700/50 flex items-center justify-center active:scale-95">
         <i class="fa-solid fa-xmark"></i>
       </button>
-      <div id="slideshowContent" class="w-full h-full flex items-center justify-center p-2">
-        <!-- Slideshow current item -->
-      </div>
+      <div id="slideshowContent" class="w-full h-full flex items-center justify-center p-2 pointer-events-none"></div>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-slate-100 border border-slate-700 text-xs font-semibold px-4 py-2.5 rounded-full shadow-2xl opacity-0 pointer-events-none transition-all duration-300">
       Notification
     </div>
@@ -320,11 +287,10 @@
   </div>
 
   <script>
-    /* Global Application State */
     let appState = {
       pin: localStorage.getItem('calculathor_pin') || '0507',
       enteredPin: '',
-      currentFolderId: null, // null = Root level (folders list only)
+      currentFolderId: null,
       isSelectMode: false,
       selectedItems: new Set(),
       currentFolderMediaKeys: [],
@@ -352,7 +318,6 @@
       appState.objectUrlMap.clear();
     }
 
-    /* IndexedDB Setup */
     function initDatabase() {
       return new Promise((resolve, reject) => {
         const request = indexedDB.open('CalculathorDB', 2);
@@ -383,7 +348,7 @@
 
     function getMediaMetadataInFolder(folderId) {
       return new Promise((resolve, reject) => {
-        if (!folderId) return resolve([]); // Root never queries or displays raw files
+        if (!folderId) return resolve([]);
         const tx = appState.db.transaction('media', 'readonly');
         const store = tx.objectStore('media');
         const index = store.index('folderId');
@@ -435,7 +400,6 @@
       });
     }
 
-    /* Folder Storage & Management */
     function loadFolders() {
       const saved = localStorage.getItem('calculathor_folders');
       if (saved) {
@@ -452,7 +416,6 @@
       localStorage.setItem('calculathor_folders', JSON.stringify(appState.folders));
     }
 
-    /* Keypad Auth Logic */
     function pressDigit(digit) {
       if (appState.enteredPin.length < 4) {
         appState.enteredPin += digit;
@@ -480,7 +443,9 @@
     }
 
     function validatePin() {
-      if (appState.enteredPin === appState.pin) {
+      // Synchronisation actualisée du PIN depuis le stockage
+      const activePin = localStorage.getItem('calculathor_pin') || appState.pin;
+      if (appState.enteredPin === activePin) {
         document.getElementById('lockScreen').classList.add('opacity-0', 'pointer-events-none');
         setTimeout(() => {
           document.getElementById('lockScreen').style.display = 'none';
@@ -497,7 +462,6 @@
       }
     }
 
-    /* Render Vault with Strict Folder Isolation */
     async function renderVault() {
       clearObjectUrls();
       loadFolders();
@@ -505,17 +469,14 @@
       const isRoot = (appState.currentFolderId === null);
       const currentFolder = appState.folders.find(f => f.id === appState.currentFolderId);
       
-      // Update Title & Header Navigation
       document.getElementById('currentFolderName').innerText = isRoot ? 'Mes Dossiers' : currentFolder.name;
       document.getElementById('backFolderBtn').style.display = isRoot ? 'none' : 'block';
       document.getElementById('selectToggleBtn').style.display = isRoot ? 'none' : 'flex';
 
-      // Exit selection mode if returning to root
       if (isRoot && appState.isSelectMode) {
         toggleSelectMode();
       }
 
-      // 1. RENDER FOLDERS SECTION
       const subFolders = appState.folders.filter(f => f.parentId === appState.currentFolderId);
       const foldersGrid = document.getElementById('foldersGrid');
       foldersGrid.innerHTML = '';
@@ -551,7 +512,6 @@
         }
       }
 
-      // 2. RENDER FILES SECTION (STRICTLY HIDDEN AT ROOT)
       const filesSection = document.getElementById('filesSection');
       const filesGrid = document.getElementById('filesGrid');
       filesGrid.innerHTML = '';
@@ -575,7 +535,6 @@
           card.id = `media-card-${item.id}`;
           card.className = `media-card relative aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-slate-800/80 cursor-pointer transition-transform duration-100 ${isSelected ? 'is-selected' : ''}`;
 
-          // Touch Scroll / Selection Guard
           let startX = 0, startY = 0, isScrolling = false, pressTimer = null;
 
           card.addEventListener('touchstart', (e) => {
@@ -613,7 +572,7 @@
           const isVideo = item.type.startsWith('video');
           card.innerHTML = `
             ${isVideo ? 
-              `<video src="${objectUrl}" class="w-full h-full object-cover pointer-events-none" preload="metadata"></video>
+              `<video src="${objectUrl}#t=0.1" class="w-full h-full object-cover pointer-events-none" preload="metadata" muted playsinline></video>
                <div class="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
                  <i class="fa-solid fa-circle-play text-white/80 text-lg"></i>
                </div>` : 
@@ -629,7 +588,6 @@
         filesSection.classList.add('hidden');
       }
 
-      // Update Subtitle Stats & Empty States
       if (isRoot) {
         document.getElementById('itemCountLabel').innerText = `${subFolders.length} dossier(s)`;
         document.getElementById('emptyVaultNotice').style.display = (subFolders.length === 0) ? 'flex' : 'none';
@@ -647,7 +605,6 @@
       renderVault();
     }
 
-    /* Fast Class-Based Selection Toggle */
     function toggleSelectMode() {
       appState.isSelectMode = !appState.isSelectMode;
       appState.selectedItems.clear();
@@ -697,7 +654,6 @@
       document.getElementById('selectedCount').innerText = appState.selectedItems.size;
     }
 
-    /* Async Progress-Tracked Batch Actions */
     async function deleteSelectedItems() {
       if (appState.selectedItems.size === 0) return;
       
@@ -758,7 +714,6 @@
       renderVault();
     }
 
-    /* Fast Streamed File / ZIP Import */
     function triggerFileInput() {
       if (!document.getElementById('fabMenu').classList.contains('hidden')) {
         toggleFabMenu();
@@ -819,7 +774,6 @@
       const files = Array.from(event.target.files);
       if (files.length === 0) return;
 
-      // Import into current folder or default to 'f_default' if imported from root
       const targetFolderId = appState.currentFolderId || 'f_default';
       let totalImported = 0;
 
@@ -845,7 +799,6 @@
       renderVault();
     }
 
-    /* Folder Actions */
     function openCreateFolderModal() {
       toggleFabMenu();
       document.getElementById('folderNameInput').value = '';
@@ -878,7 +831,7 @@
       renderVault();
     }
 
-    /* Media Viewer */
+    // Media Viewer (respecte la taille de l'écran avec object-contain)
     async function openMediaViewer(id) {
       const item = await getMediaItemBlob(id);
       if (!item) return;
@@ -887,10 +840,9 @@
       const url = URL.createObjectURL(item.blob);
       const isVideo = item.type.startsWith('video');
 
-      // MODIFICATION ICI : Classes changées pour le grand écran (w-full h-full object-cover pour les images)
       container.innerHTML = isVideo ? 
         `<video src="${url}" controls autoplay class="w-full h-full object-contain m-0 p-0"></video>` : 
-        `<img src="${url}" class="w-full h-full object-cover m-0 p-0 block">`;
+        `<img src="${url}" class="w-full h-full object-contain m-0 p-0 block">`;
 
       openModal('mediaViewerModal');
     }
@@ -900,7 +852,7 @@
       closeModal('mediaViewerModal');
     }
 
-    /* Slideshow Engine */
+    // Slideshow Engine
     let slideshowState = {
       queue: [],
       currentIndex: 0,
@@ -960,7 +912,8 @@
       const fullVideo = document.getElementById('fullVideoToggle').checked;
 
       if (isVideo) {
-        container.innerHTML = `<video id="slideVideo" src="${url}" autoplay class="max-w-full max-h-full object-contain"></video>`;
+        // Vidéo lue naturellement sans lecteur lourd dans le diaporama
+        container.innerHTML = `<video id="slideVideo" src="${url}" autoplay muted playsinline class="w-full h-full object-contain"></video>`;
         const video = document.getElementById('slideVideo');
         if (fullVideo) {
           video.onended = () => nextSlideshowItem();
@@ -968,12 +921,13 @@
           slideshowState.timer = setTimeout(nextSlideshowItem, photoDuration);
         }
       } else {
-        container.innerHTML = `<img src="${url}" class="max-w-full max-h-full object-contain">`;
+        container.innerHTML = `<img src="${url}" class="w-full h-full object-contain">`;
         slideshowState.timer = setTimeout(nextSlideshowItem, photoDuration);
       }
     }
 
     function nextSlideshowItem() {
+      if (document.getElementById('slideshowViewer').classList.contains('hidden')) return;
       slideshowState.currentIndex = (slideshowState.currentIndex + 1) % slideshowState.queue.length;
       renderSlideshowItem();
     }
@@ -984,7 +938,6 @@
       document.getElementById('slideshowContent').innerHTML = '';
     }
 
-    /* Backup & Settings */
     function openSettingsModal() { openModal('settingsModal'); }
 
     function updatePin() {
@@ -1083,7 +1036,6 @@
       });
     }
 
-    /* Modal Progress UI Helpers */
     function showProgressModal(title, subtitle) {
       document.getElementById('progressTitle').innerText = title;
       document.getElementById('progressSubtitle').innerText = subtitle;
@@ -1098,7 +1050,6 @@
 
     function hideProgressModal() { closeModal('progressModal'); }
 
-    /* UI Utilities */
     function toggleFabMenu() {
       const menu = document.getElementById('fabMenu');
       const icon = document.getElementById('fabIcon');
@@ -1120,7 +1071,6 @@
       }, 2500);
     }
 
-    /* App Boot */
     window.onload = async () => {
       await initDatabase();
       loadFolders();
